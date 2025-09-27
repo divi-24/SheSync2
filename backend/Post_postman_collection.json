@@ -1,0 +1,1091 @@
+{
+  "info": {
+    "name": "Posts API - SheSync",
+    "_postman_id": "posts-api-testing-2024",
+    "description": "Complete API collection for testing Posts functionality in SheSync platform. Includes authentication, community setup, and comprehensive post management testing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register Test User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new test user for Posts API testing"
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('token', response.token);",
+                  "        pm.collectionVariables.set('userId', response.user.id);",
+                  "        console.log('✅ Token saved:', response.token);",
+                  "        console.log('✅ User ID saved:', response.user.id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ Login failed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login to get JWT token for authenticated requests"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏘️ Community Setup",
+      "item": [
+        {
+          "name": "Create Test Community",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('communityId', response.data._id);",
+                  "        console.log('✅ Community ID saved:', response.data._id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ Community creation failed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Menstrual Health Support\",\n  \"description\": \"A safe space for discussing menstrual health, hygiene tips, and supporting each other through our cycles.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/communities",
+              "host": ["{{baseUrl}}"],
+              "path": ["communities"]
+            },
+            "description": "Create a test community for posting content"
+          }
+        },
+        {
+          "name": "Join Community",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/communities/join/{{communityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["communities", "join", "{{communityId}}"]
+            },
+            "description": "Join the test community"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Post Management",
+      "item": [
+        {
+          "name": "Create Post with Title",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('postId', response.data._id);",
+                  "        console.log('✅ Post ID saved:', response.data._id);",
+                  "    }",
+                  "} else {",
+                  "    console.log('❌ Post creation failed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Understanding Menstrual Cycles\",\n  \"content\": \"Let's discuss the different phases of menstrual cycles and how they affect our bodies. Did you know the average cycle is 28 days but can range from 21-35 days? Share your experiences!\",\n  \"communityId\": \"{{communityId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Create a new post with title and content"
+          }
+        },
+        {
+          "name": "Create Post without Title",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('secondPostId', response.data._id);",
+                  "        console.log('✅ Second Post ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Just wanted to share that switching to menstrual cups has been life-changing! Much more comfortable and eco-friendly. Anyone else using them?\",\n  \"communityId\": \"{{communityId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Create a post without title (title is optional)"
+          }
+        },
+        {
+          "name": "Create Educational Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Period Pain Management Tips\",\n  \"content\": \"Here are some natural ways to manage period pain:\\n\\n1. Heat therapy - Use heating pads or hot water bottles\\n2. Light exercise - Gentle yoga or walking\\n3. Stay hydrated - Drink plenty of water\\n4. Magnesium supplements - Can help with cramps\\n5. Anti-inflammatory foods - Like leafy greens and berries\\n\\nWhat works best for you?\",\n  \"communityId\": \"{{communityId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Create an educational post about period pain management"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📖 Reading Posts",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Retrieve all posts from all communities (sorted by newest first)"
+          }
+        },
+        {
+          "name": "Get Single Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}"]
+            },
+            "description": "Get details of a specific post including populated author and community info"
+          }
+        },
+        {
+          "name": "Get Posts by Community (Page 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/community/{{communityId}}?page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "community", "{{communityId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "Number of posts per page"
+                }
+              ]
+            },
+            "description": "Get posts from a specific community with pagination"
+          }
+        },
+        {
+          "name": "Get Posts by Community (Page 2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/community/{{communityId}}?page=2&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "community", "{{communityId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test pagination - get second page of community posts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "✏️ Post Interactions",
+      "item": [
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "like"]
+            },
+            "description": "Like a post (toggle functionality - like if not liked, unlike if already liked)"
+          }
+        },
+        {
+          "name": "Unlike Post (Toggle)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "like"]
+            },
+            "description": "Toggle like again to unlike the post"
+          }
+        },
+        {
+          "name": "Like Second Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{secondPostId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{secondPostId}}", "like"]
+            },
+            "description": "Like the second post to test multiple post interactions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Post Updates",
+      "item": [
+        {
+          "name": "Update Post Content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Understanding Menstrual Cycles - Updated\",\n  \"content\": \"Let's discuss the different phases of menstrual cycles and how they affect our bodies. Did you know the average cycle is 28 days but can range from 21-35 days?\\n\\n**UPDATE**: Added some great resources:\\n- Track your cycle with apps like Clue or Flo\\n- Keep a period diary to understand your patterns\\n- Consult a doctor if you notice significant changes\\n\\nShare your experiences and tips!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}"]
+            },
+            "description": "Update both title and content of a post (only author can update)"
+          }
+        },
+        {
+          "name": "Update Only Content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Just wanted to share that switching to menstrual cups has been life-changing! Much more comfortable and eco-friendly. \\n\\n**UPDATE**: For beginners, I recommend starting with a softer cup and watching tutorial videos. It takes practice but it's worth it! Anyone else using them?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{secondPostId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{secondPostId}}"]
+            },
+            "description": "Update only the content of a post (title remains unchanged)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🗑️ Post Deletion",
+      "item": [
+        {
+          "name": "Delete Second Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{secondPostId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{secondPostId}}"]
+            },
+            "description": "Delete a post (only author can delete)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Comment Management",
+      "item": [
+        {
+          "name": "Add Comment to Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('commentId', response.data._id);",
+                  "        console.log('✅ Comment ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is such a helpful post! I've been tracking my cycle for 6 months now and it really helps me understand my body better. Thanks for sharing!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            },
+            "description": "Add a comment to a post"
+          }
+        },
+        {
+          "name": "Add Second Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('secondCommentId', response.data._id);",
+                  "        console.log('✅ Second Comment ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"I agree! Also, using period tracking apps like Clue has been a game-changer for me. It helps predict my cycle and symptoms.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            },
+            "description": "Add a second comment to test multiple comments"
+          }
+        },
+        {
+          "name": "Get Comments for Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/comments?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "comments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all comments for a specific post with pagination"
+          }
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is such a helpful post! I've been tracking my cycle for 6 months now and it really helps me understand my body better. **UPDATE**: I also started using a period cup and it's amazing! Thanks for sharing!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{commentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{commentId}}"]
+            },
+            "description": "Update a comment (only comment author can update)"
+          }
+        },
+        {
+          "name": "Like Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{commentId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{commentId}}", "like"]
+            },
+            "description": "Like a comment (toggle functionality)"
+          }
+        },
+        {
+          "name": "Unlike Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{commentId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{commentId}}", "like"]
+            },
+            "description": "Toggle like again to unlike the comment"
+          }
+        },
+        {
+          "name": "Like Second Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{secondCommentId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{secondCommentId}}", "like"]
+            },
+            "description": "Like the second comment"
+          }
+        },
+        {
+          "name": "Delete Second Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{secondCommentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{secondCommentId}}"]
+            },
+            "description": "Delete a comment (only comment author can delete)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚠️ Error Testing",
+      "item": [
+        {
+          "name": "Create Post without Authentication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized Post\",\n  \"content\": \"This should fail because no auth token\",\n  \"communityId\": \"{{communityId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Expected: 401 Unauthorized - Cannot create post without authentication"
+          }
+        },
+        {
+          "name": "Create Post without Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Post without content\",\n  \"communityId\": \"{{communityId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Expected: 400 Bad Request - Content is required"
+          }
+        },
+        {
+          "name": "Create Post without Community",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Post without community\",\n  \"content\": \"This should fail because no community specified\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Expected: 400 Bad Request - Community is required"
+          }
+        },
+        {
+          "name": "Create Post with Invalid Community",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Post with invalid community\",\n  \"content\": \"This should fail because community doesn't exist\",\n  \"communityId\": \"507f1f77bcf86cd799439011\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts"]
+            },
+            "description": "Expected: 404 Not Found - Community not found"
+          }
+        },
+        {
+          "name": "Get Non-existent Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/507f1f77bcf86cd799439011",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "507f1f77bcf86cd799439011"]
+            },
+            "description": "Expected: 404 Not Found - Post not found"
+          }
+        },
+        {
+          "name": "Get Posts from Non-existent Community",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/community/507f1f77bcf86cd799439011",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "community", "507f1f77bcf86cd799439011"]
+            },
+            "description": "Expected: 404 Not Found - Community not found"
+          }
+        },
+        {
+          "name": "Update Post without Authentication",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Trying to update without auth\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}"]
+            },
+            "description": "Expected: 401 Unauthorized - Cannot update post without authentication"
+          }
+        },
+        {
+          "name": "Like Post without Authentication",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "like"]
+            },
+            "description": "Expected: 401 Unauthorized - Cannot like post without authentication"
+          }
+        },
+        {
+          "name": "Delete Non-existent Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/507f1f77bcf86cd799439011",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "507f1f77bcf86cd799439011"]
+            },
+            "description": "Expected: 404 Not Found - Post not found"
+          }
+        },
+        {
+          "name": "Add Comment without Authentication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This should fail without auth\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            },
+            "description": "Expected: 401 Unauthorized - Cannot add comment without authentication"
+          }
+        },
+        {
+          "name": "Add Empty Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/{{postId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            },
+            "description": "Expected: 400 Bad Request - Comment content is required"
+          }
+        },
+        {
+          "name": "Add Comment to Non-existent Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Comment on non-existent post\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/507f1f77bcf86cd799439011/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "507f1f77bcf86cd799439011", "comments"]
+            },
+            "description": "Expected: 404 Not Found - Post not found"
+          }
+        },
+        {
+          "name": "Update Comment without Authentication",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Trying to update without auth\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{commentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{commentId}}"]
+            },
+            "description": "Expected: 401 Unauthorized - Cannot update comment without authentication"
+          }
+        },
+        {
+          "name": "Delete Non-existent Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/507f1f77bcf86cd799439011",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "507f1f77bcf86cd799439011"]
+            },
+            "description": "Expected: 404 Not Found - Comment not found"
+          }
+        },
+        {
+          "name": "Like Comment without Authentication",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/posts/comments/{{commentId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["posts", "comments", "{{commentId}}", "like"]
+            },
+            "description": "Expected: 401 Unauthorized - Cannot like comment without authentication"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Log the current request",
+          "console.log('🚀 Making request to:', pm.request.url.toString());",
+          "console.log('📝 Method:', pm.request.method);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Log response details",
+          "console.log('📊 Response status:', pm.response.code);",
+          "console.log('⏱️ Response time:', pm.response.responseTime + 'ms');",
+          "",
+          "// Basic status code tests",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    console.log('✅ Request successful');",
+          "} else if (pm.response.code >= 400 && pm.response.code < 500) {",
+          "    console.log('⚠️ Client error:', pm.response.code);",
+          "} else if (pm.response.code >= 500) {",
+          "    console.log('❌ Server error:', pm.response.code);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string",
+      "description": "Base URL for the SheSync API"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT authentication token (automatically set after login)"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "Current authenticated user ID"
+    },
+    {
+      "key": "communityId",
+      "value": "",
+      "type": "string",
+      "description": "Test community ID (automatically set after community creation)"
+    },
+    {
+      "key": "postId",
+      "value": "",
+      "type": "string",
+      "description": "ID of the main test post (automatically set after creation)"
+    },
+    {
+      "key": "secondPostId",
+      "value": "",
+      "type": "string",
+      "description": "ID of the second test post (automatically set after creation)"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string",
+      "description": "ID of the main test comment (automatically set after creation)"
+    },
+    {
+      "key": "secondCommentId",
+      "value": "",
+      "type": "string",
+      "description": "ID of the second test comment (automatically set after creation)"
+    }
+  ]
+}
