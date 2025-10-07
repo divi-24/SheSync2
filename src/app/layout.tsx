@@ -52,6 +52,8 @@ import Footer from "@/components/Footer";
 import type { Metadata, Viewport } from "next";
 import { Lexend_Deca } from "next/font/google";
 import ClientLoaderWrapper from "@/components/ClientLoaderWrapper";
+// VoiceControl is a client component (has "use client") so we can import it directly.
+import VoiceControl from '@/components/VoiceControl';
 
 const lexendDeca = Lexend_Deca({
   subsets: ['latin'],
@@ -87,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NavbarWrapper />
             {children}
             <Footer />
+            <VoiceControl />
           </ClientLoaderWrapper>
         </AuthProvider>
       </body>
