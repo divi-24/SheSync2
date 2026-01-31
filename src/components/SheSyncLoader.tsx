@@ -121,7 +121,7 @@ export default function SheSyncLoader() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           >
-            {/* Outer glow circle */}
+            {/* Outer glow */}
             <motion.div
               className="absolute inset-0 rounded-full blur-2xl"
               style={{
@@ -137,6 +137,115 @@ export default function SheSyncLoader() {
                 ease: "easeInOut",
               }}
             />
+
+            {/* SVG Flower */}
+            <svg
+              className="absolute inset-0 w-full h-full"
+              viewBox="-120 -120 240 240"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <linearGradient id="petal1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f472b6" />
+                  <stop offset="100%" stopColor="#ec4899" />
+                </linearGradient>
+                <linearGradient id="petal2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#d946ef" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+                <linearGradient id="petal3" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f43f5e" />
+                  <stop offset="100%" stopColor="#ec4899" />
+                </linearGradient>
+              </defs>
+
+              {/* Outer petals - Large */}
+              <motion.g
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              >
+                {[0, 60, 120, 180, 240, 300].map((angle) => (
+                  <motion.path
+                    key={`outer-${angle}`}
+                    d={`M 0,0 C -18,-50 -35,-90 0,-100 C 35,-90 18,-50 0,0 Z`}
+                    fill={angle % 180 === 0 ? "url(#petal1)" : angle % 120 === 0 ? "url(#petal2)" : "url(#petal3)"}
+                    opacity="0.85"
+                    filter="url(#glow)"
+                    style={{
+                      transformOrigin: "0 0",
+                      transform: `rotate(${angle}deg)`,
+                    }}
+                    animate={{
+                      opacity: [0.6, 0.95, 0.6],
+                    }}
+                    transition={{
+                      duration: 3,
+                      delay: angle / 100,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ))}
+              </motion.g>
+
+              {/* Middle petals - Medium */}
+              <motion.g
+                animate={{ rotate: -360 }}
+                transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+              >
+                {[0, 72, 144, 216, 288].map((angle) => (
+                  <motion.path
+                    key={`mid-${angle}`}
+                    d={`M 0,0 C -16,-55 -35,-85 0,-95 C 35,-85 16,-55 0,0 Z`}
+                    fill={angle % 144 === 0 ? "url(#petal2)" : "url(#petal3)"}
+                    opacity="0.7"
+                    filter="url(#glow)"
+                    style={{
+                      transformOrigin: "0 0",
+                      transform: `rotate(${angle}deg)`,
+                    }}
+                    animate={{
+                      opacity: [0.5, 0.85, 0.5],
+                    }}
+                    transition={{
+                      duration: 3.5,
+                      delay: angle / 120,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ))}
+              </motion.g>
+
+              {/* Center circle with shimmer */}
+              <motion.circle
+                cx="0"
+                cy="0"
+                r="18"
+                fill="url(#petal1)"
+                opacity="0.9"
+                filter="url(#glow)"
+                animate={{
+                  r: [16, 22, 16],
+                  opacity: [0.8, 1, 0.8],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+
+              {/* Inner highlight */}
+              <circle cx="0" cy="0" r="8" fill="white" opacity="0.5" />
+            </svg>
           </motion.div>
 
           {/* Premium Text Section */}
