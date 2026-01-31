@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signup } from "../../lib/auth";
 import { motion } from "framer-motion";
-import {  Mail, Lock, Users, Eye, EyeOff, ArrowLeft, Shield, User } from "lucide-react";
+import { Mail, Lock, Users, Eye, EyeOff, ArrowLeft, Shield, User } from "lucide-react";
+import { useAuthContext } from '@/context/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", role: "user", password: "", confirm: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const { refreshAuth } = useAuthContext();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -21,6 +23,13 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signup({ name: form.name, email: form.email, role: form.role, password: form.password });
+      // Refresh auth state in context so components (like the navbar) update immediately
+      try {
+        await refreshAuth();
+      } catch (e) {
+        // non-fatal: continue to redirect even if refresh fails
+        console.warn('refreshAuth failed after signup', e);
+      }
       router.replace("/dashboard");
     } catch (error: unknown) {
       setErr(

@@ -147,6 +147,7 @@ export default function PeriodTracker() {
   const testBackendConnection = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/health', { method: 'GET' });
+      console.log('Backend health check response:', response);
       return response.ok;
     } catch {
       return false;
@@ -165,13 +166,11 @@ export default function PeriodTracker() {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      // Rely on HttpOnly cookie sent by the server (credentials: include)
+      console.log(`Fetching ${dataType} using cookie-based auth`);
       const response = await axios.get(
         `http://localhost:5000/api/period-tracker/${dataType}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           withCredentials: true,
         }
       );
@@ -291,16 +290,13 @@ export default function PeriodTracker() {
     };
 
     try {
-      // Get JWT token from localStorage or cookies
-      const token = localStorage.getItem('token') || '';
-
+      // Use cookie-based auth (server should set HttpOnly cookie on login)
       const response = await axios.post(
         `http://localhost:5000/api/period-tracker`,
         submissionData,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         }
@@ -368,25 +364,25 @@ export default function PeriodTracker() {
       <div className="min-h-screen bg-gradient-to-br from-pink-50  via-fuchsia-50 to-fuchsia-100">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Header */}
-            <motion.div
+          <motion.div
             initial={{ opacity: 0, y: -20, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center mb-8"
-            >
+          >
             <h1 className={`${cookie.className} text-4xl md:text-6xl`}>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600">
-              {(() => {
-                const hour = new Date().getHours();
-                let greeting = '';
-                if (hour < 12) greeting = 'Good Morning';
-                else if (hour < 17) greeting = 'Good Afternoon';
-                else greeting = 'Good Evening';
-                return `${greeting}, ${user.name}!`;
-              })()}
+                {(() => {
+                  const hour = new Date().getHours();
+                  let greeting = '';
+                  if (hour < 12) greeting = 'Good Morning';
+                  else if (hour < 17) greeting = 'Good Afternoon';
+                  else greeting = 'Good Evening';
+                  return `${greeting}, ${user.name}!`;
+                })()}
               </span>
               <span className="text-4xl pb-3">
-              🌷
+                🌷
               </span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 mt-3">
