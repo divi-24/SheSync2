@@ -33,7 +33,7 @@ export interface CreateCommunityMessageData {
 let socket: Socket | null = null;
 let connectionPromise: Promise<Socket> | null = null;
 
-export const initializeCommunitySocket = (serverUrl: string = 'http://localhost:5000'): Promise<Socket> => {
+export const initializeCommunitySocket = (serverUrl: string = 'http://localhost:8000'): Promise<Socket> => {
     if (socket && socket.connected) {
         return Promise.resolve(socket);
     }

@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "Community Messages API",
+    "_postman_id": "b7c45e8f-9f1d-4c7b-82f1-14c6a9a728ce",
+    "description": "Collection to test Community Messages API routes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"communityId\": \"{{communityId}}\",\n  \"content\": \"This is a test message\",\n  \"isAnonymous\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/messages",
+          "host": ["{{baseUrl}}"],
+          "path": ["messages"]
+        }
+      }
+    },
+    {
+      "name": "Get Messages by Community",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/messages/{{communityId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["messages", "{{communityId}}"]
+        }
+      }
+    },
+    {
+      "name": "Delete Message",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/messages/{{messageId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["messages", "{{messageId}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "communityId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    }
+  ]
+}

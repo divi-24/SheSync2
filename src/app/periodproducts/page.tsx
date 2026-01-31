@@ -6,6 +6,9 @@ import React from "react";
 import prodcup from "../../../public/prod-cup-img.png";
 import prodpad from "../../../public/prod-pad-img.png";
 import prodtampoon from "../../../public/prod-tampoon-img.png";
+import produnderwear from "../../../public/prod-underwear-img.png";
+import proddisc from "../../../public/prod-disc-img.png";
+import prodcloth from "../../../public/prod-cloth-img.png";
 import { motion } from "framer-motion";
 import { Cookie } from "next/font/google";
 
@@ -32,6 +35,27 @@ const products = [
     image: prodcup,
     description:
       "Menstrual cups are a reusable, eco-friendly alternative to pads and tampons, made from medical-grade silicone, rubber, or latex, designed to collect, rather than absorb, menstrual blood. They are a great choice for those looking for a long-term, cost-effective, and sustainable solution. Unlike disposable products, cups can be worn for up to 12 hours depending on flow, offering convenience and fewer changes throughout the day. To use, fold the cup and insert it into the vagina, where it will open and form a seal to prevent leaks. After several hours, remove the cup by gently pinching the base to break the seal, empty the contents, rinse it with water, and reinsert. Menstrual cups can last for several years with proper care, making them both economical and environmentally friendly.",
+  },
+  {
+    title: "Period Underwear",
+    image: produnderwear,
+    icon: "🩳",
+    description:
+      "Period underwear, also known as menstrual underwear or period-proof pants, are specially designed undergarments with built-in absorbent layers that can hold menstrual fluid without the need for additional pads or tampons. These innovative products are perfect for those seeking a comfortable, mess-free period experience. Period underwear comes in various styles including bikini, boyshort, and thong, and can absorb the equivalent of 2-4 tampons depending on the brand and style. They are reusable and machine-washable, making them an eco-friendly and cost-effective option. To use, simply wear them like regular underwear during your period, then wash them in cold water after use. Many people love period underwear for nighttime wear, as a backup with other products, or for lighter flow days. They provide freedom of movement, comfort, and peace of mind without the worry of leaks.",
+  },
+  {
+    title: "Menstrual Disc",
+    image: proddisc,
+    icon: "💿",
+    description:
+      "Menstrual discs are a newer innovation in period care, offering an alternative to cups and tampons. These thin, flexible discs are inserted into the vagina to sit under the cervix and collect menstrual fluid, similar to a cup but with a flatter, more comfortable design. Discs can be worn for up to 12 hours and some can even be worn during penetrative sex without leakage. They are made from medical-grade silicone and are reusable, making them environmentally friendly and cost-effective long-term. To insert, fold the disc and guide it into the vagina, positioning it to form a seal beneath the cervix. Many prefer discs over cups because they are less intrusive and feel more comfortable, especially for those with vaginal sensitivity or a higher cervix. Like cups, discs should be emptied, rinsed, and reinserted, and can last for several years with proper care.",
+  },
+  {
+    title: "Cloth Pads",
+    image: prodcloth,
+    icon: "🧵",
+    description:
+      "Cloth pads, also called reusable menstrual pads or fabric pads, are made from layers of absorbent natural fabrics like organic cotton, bamboo, or hemp, offering a sustainable and comfortable alternative to disposable pads. These washable pads attach to underwear with snaps or buttons and come in various sizes and absorbencies for different flow levels. Cloth pads are naturally breathable, reducing the risk of irritation and infections caused by synthetic materials used in conventional pads. To use, simply place them in your underwear like a regular pad, and after use, rinse with cold water to prevent staining, then wash in a washing machine. Cloth pads are highly durable and can last for years, making them an economical choice despite the higher upfront cost. Many users appreciate the comfort, sustainability, and the reduced environmental impact of choosing cloth pads for their periods.",
   },
 ];
 
@@ -89,10 +113,10 @@ const PeriodProducts = () => {
           {product.title}
           </h3>
           <img
-          src={typeof product.image === "string" ? product.image : product.image.src}
-          alt={product.title}
-          className="mx-auto mb-4 h-40 object-contain"
-          />
+           src={typeof product.image === "string" ? product.image : product.image.src}
+           alt={product.title}
+           className="mx-auto mb-4 h-40 w-40 rounded-full object-cover"
+           />
           <p className="text-sm text-gray-700 dark:text-gray-300 text-justify">
           {product.description}
           </p>

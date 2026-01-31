@@ -132,15 +132,12 @@ export default function Bliss() {
                 >
                 <div className="relative">
                 <Image
-                  width={400}
-                  height={400}
-                  src={game.image}
-                  alt={game.title}
-                  className="h-40 w-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                  priority={true}
-                  placeholder="blur"
-                />
+                   width={400}
+                   height={400}
+                   src={game.image}
+                   alt={game.title}
+                   className="h-40 w-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+                 />
          
                 </div>
                 <div className="flex flex-col flex-1 p-5">

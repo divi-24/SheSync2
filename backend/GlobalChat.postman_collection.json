@@ -1,0 +1,415 @@
+{
+  "info": {
+    "name": "Global Chat API",
+    "_postman_id": "gc-12345-67890-abcdef",
+    "description": "API collection for testing Global Chat functionality in SheSync platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('token', response.token);",
+                  "        pm.collectionVariables.set('userId', response.user.id);",
+                  "        console.log('Token saved:', response.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login to get authentication token for Global Chat"
+          }
+        },
+        {
+          "name": "Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user for testing Global Chat"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Global Chat Messages",
+      "item": [
+        {
+          "name": "Send Global Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('globalMessageId', response._id);",
+                  "        console.log('Message ID saved:', response._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hello everyone! This is a test message in global chat.\",\n  \"isAnonymous\": false,\n  \"mediaUrl\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat"]
+            },
+            "description": "Send a regular message to global chat"
+          }
+        },
+        {
+          "name": "Send Anonymous Global Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is an anonymous message for privacy and safety.\",\n  \"isAnonymous\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat"]
+            },
+            "description": "Send an anonymous message to global chat"
+          }
+        },
+        {
+          "name": "Send Message with Media",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Check out this helpful resource about menstrual health!\",\n  \"isAnonymous\": false,\n  \"mediaUrl\": \"https://example.com/health-resource.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat"]
+            },
+            "description": "Send a message with media URL to global chat"
+          }
+        },
+        {
+          "name": "Get All Global Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat"]
+            },
+            "description": "Retrieve all messages from global chat (sorted by newest first)"
+          }
+        },
+        {
+          "name": "Update Message Content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is the updated content of my global message.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat/{{globalMessageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat", "{{globalMessageId}}"]
+            },
+            "description": "Update the content of an existing global message"
+          }
+        },
+        {
+          "name": "Toggle Message Anonymity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAnonymous\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat/{{globalMessageId}}/anonymous",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "global",
+                "global-chat",
+                "{{globalMessageId}}",
+                "anonymous"
+              ]
+            },
+            "description": "Toggle the anonymity status of a global message"
+          }
+        },
+        {
+          "name": "Delete Global Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat/{{globalMessageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat", "{{globalMessageId}}"]
+            },
+            "description": "Delete a global message (only message owner can delete)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Testing",
+      "item": [
+        {
+          "name": "Send Message Without Auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This should fail without authentication\",\n  \"isAnonymous\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat"]
+            },
+            "description": "Test sending message without authentication token (should return 401)"
+          }
+        },
+        {
+          "name": "Send Empty Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"\",\n  \"isAnonymous\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat"]
+            },
+            "description": "Test sending empty message (should fail validation)"
+          }
+        },
+        {
+          "name": "Update Non-existent Message",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Trying to update non-existent message\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat/507f1f77bcf86cd799439011",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat", "507f1f77bcf86cd799439011"]
+            },
+            "description": "Test updating a non-existent message (should return 404)"
+          }
+        },
+        {
+          "name": "Delete Non-existent Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/global/global-chat/507f1f77bcf86cd799439011",
+              "host": ["{{baseUrl}}"],
+              "path": ["global", "global-chat", "507f1f77bcf86cd799439011"]
+            },
+            "description": "Test deleting a non-existent message (should return 404)"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Log the current request",
+          "console.log('Making request to:', pm.request.url.toString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Log response status",
+          "console.log('Response status:', pm.response.code);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string",
+      "description": "Base URL for the SheSync API"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT authentication token (automatically set after login)"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "Current authenticated user ID"
+    },
+    {
+      "key": "globalMessageId",
+      "value": "",
+      "type": "string",
+      "description": "ID of the last created global message (automatically set)"
+    }
+  ]
+}

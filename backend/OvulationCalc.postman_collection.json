@@ -1,0 +1,142 @@
+{
+  "info": {
+    "name": "Ovulation Calculator API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth → Login (get token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "Cycle → Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"startDate\": \"2025-08-01\",\n  \"cycleLength\": 28,\n  \"lutealPhaseLength\": 14,\n  \"menstrualDuration\": 5,\n  \"symptoms\": { \"cramps\": true, \"headaches\": false }\n}"
+        },
+        "url": "{{baseUrl}}/api/cycles"
+      }
+    },
+    {
+      "name": "Cycle → Get All",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/cycles"
+      }
+    },
+    {
+      "name": "Cycle → Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/cycles/{{cycleId}}"
+      }
+    },
+    {
+      "name": "Symptoms → Upsert (daily)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date\": \"2025-08-16\",\n  \"cramps\": true,\n  \"moodSwings\": true,\n  \"severity\": { \"cramps\": 4, \"moodSwings\": 2 },\n  \"notes\": \"Mild cramps\"\n}"
+        },
+        "url": "{{baseUrl}}/api/symptoms"
+      }
+    },
+    {
+      "name": "Symptoms → Get All",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/symptoms"
+      }
+    },
+    {
+      "name": "Symptoms → Get By Date",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/symptoms/2025-08-16"
+      }
+    },
+    {
+      "name": "Pregnancy → Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cycle\": \"{{cycleId}}\",\n  \"gestationalAge\": \"6 weeks, 2 days\",\n  \"dueDate\": \"2026-02-10\",\n  \"currentTrimester\": 1,\n  \"firstTrimester\": \"Week 1–12\",\n  \"secondTrimester\": \"Week 13–27\",\n  \"thirdTrimester\": \"Week 28–40\",\n  \"milestones\": [ { \"week\": 6, \"milestone\": \"Heartbeat detected\", \"date\": \"2025-09-20\" } ],\n  \"daysUntilDue\": 180,\n  \"babySize\": \"Apple\",\n  \"babyWeight\": \"200g\",\n  \"weeklyTips\": [\"Stay hydrated\", \"Light walking helps circulation\"],\n  \"conceptionDate\": \"2025-05-18\"\n}"
+        },
+        "url": "{{baseUrl}}/api/pregnancy"
+      }
+    },
+    {
+      "name": "Pregnancy → Get Active",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/pregnancy/active"
+      }
+    },
+    {
+      "name": "Pregnancy → Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"babySize\": \"Mango\",\n  \"weeklyTips\": [\"Yoga is safe now\", \"Get enough sleep\"]\n}"
+        },
+        "url": "{{baseUrl}}/api/pregnancy/{{pregnancyId}}"
+      }
+    },
+    {
+      "name": "Pregnancy → Archive",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/pregnancy/{{pregnancyId}}/archive"
+      }
+    },
+    {
+      "name": "Pregnancy → Get History",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/pregnancy"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" },
+    { "key": "cycleId", "value": "" },
+    { "key": "pregnancyId", "value": "" }
+  ]
+}

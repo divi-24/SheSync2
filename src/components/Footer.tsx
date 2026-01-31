@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { useToast } from "../hooks/useToast";
 import { ToastContainer } from "./ui/Toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {Cookie} from "next/font/google"
 const  cookie = Cookie({
   subsets: ['latin'],
@@ -14,6 +14,11 @@ const  cookie = Cookie({
 export default function Footer() {
     const { toasts, success, error, removeToast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [year, setYear] = useState(2025);
+
+    useEffect(() => {
+        setYear(new Date().getFullYear());
+    }, []);
 
     return (
         <>
@@ -136,7 +141,7 @@ export default function Footer() {
                 {/* Bottom bar */}
                 <div className="border-t border-gray-200 mt-10">
                     <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-                        <p>© {new Date().getFullYear()} SheSync. All rights reserved.</p>
+                        <p>© {year} SheSync. All rights reserved.</p>
                         <p className="mt-2 md:mt-0">Built with ❤️ for women’s wellness</p>
                     </div>
                 </div>
