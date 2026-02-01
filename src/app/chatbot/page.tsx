@@ -16,13 +16,8 @@ import {
   HelpCircle,
   BookOpen,
 } from "lucide-react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 // import SideBar from "./SideBar";
 // import useScreenSize from "../../hooks/useScreenSize";
-
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const TAB_CHOICES = [
   {
@@ -171,9 +166,6 @@ export default function Chatbot() {
   };
 
   interface HandleSubmitEvent extends React.FormEvent<HTMLFormElement> {}
-  interface GenerateContentResponse {
-    response?: { text: () => string };
-  }
 
   const handleSubmit = async (e: HandleSubmitEvent): Promise<void> => {
     e.preventDefault();
@@ -204,22 +196,32 @@ ${lastMsgs.map((m) => `${m.role === "user" ? "User" : "Eve"}: ${m.content}`).joi
 Eve:`;
 
     try {
-      const result: GenerateContentResponse = await model.generateContent(systemPrompt);
-      let text = (result.response?.text() || "").trim();
-      if (updatedName && text) {
-        text = text.replace(new RegExp(`^(Hi,?\\s+)?(${updatedName}[,:\\s-]+)`, "i"), "");
-      }
-      setMessages((prev) => [...prev, { role: "assistant", content: text }]);
-      setUserName(updatedName);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Sorry, I couldn't generate a response. Please try again." },
-      ]);
-    } finally {
-      setIsTyping(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
+       const response = await fetch("/ai-gemini", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ prompt: systemPrompt }),
+       });
+
+       if (!response.ok) {
+         throw new Error(`API error: ${response.statusText}`);
+       }
+
+       const data = await response.json();
+       let text = (data.text || "").trim();
+       if (updatedName && text) {
+         text = text.replace(new RegExp(`^(Hi,?\\s+)?(${updatedName}[,:\\s-]+)`, "i"), "");
+       }
+       setMessages((prev) => [...prev, { role: "assistant", content: text }]);
+       setUserName(updatedName);
+     } catch {
+       setMessages((prev) => [
+         ...prev,
+         { role: "assistant", content: "Sorry, I couldn't generate a response. Please try again." },
+       ]);
+     } finally {
+       setIsTyping(false);
+       setTimeout(() => inputRef.current?.focus(), 50);
+     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

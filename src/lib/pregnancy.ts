@@ -57,6 +57,14 @@ export async function archivePregnancy(id: string): Promise<Pregnancy> {
   return body as Pregnancy;
 }
 
+export async function deletePregnancy(id: string): Promise<{ message: string }> {
+  const { ok, body } = await apiFetch(`/api/pregnancy/${id}`, {
+    method: 'DELETE',
+  });
+  if (!ok) throw new Error((body as ApiErrorResponse)?.message || 'Failed to delete pregnancy');
+  return body as { message: string };
+}
+
 export async function getPregnancyHistory(): Promise<Pregnancy[]> {
   const { ok, body } = await apiFetch('/api/pregnancy');
   if (!ok) throw new Error((body as ApiErrorResponse)?.message || 'Failed to fetch pregnancy history');

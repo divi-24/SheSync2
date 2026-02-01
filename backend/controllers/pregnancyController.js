@@ -112,6 +112,25 @@ export const archivePregnancy = async (req, res) => {
 };
 
 /**
+ * @desc Delete pregnancy record permanently
+ * @route DELETE /api/pregnancy/:id
+ * @access Private
+ */
+export const deletePregnancy = async (req, res) => {
+  try {
+    const pregnancy = await Pregnancy.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+    if (!pregnancy) return res.status(404).json({ message: "Pregnancy not found" });
+    res.json({ message: "Pregnancy record deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting pregnancy:", error);
+    res.status(500).json({ message: "Server error while deleting pregnancy." });
+  }
+};
+
+/**
  * @desc Get pregnancy history (all records for user)
  * @route GET /api/pregnancy
  * @access Private

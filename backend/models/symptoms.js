@@ -15,7 +15,26 @@ const SymptomsSchema = new mongoose.Schema(
     // Each entry belongs to a specific day
     date: { type: Date, required: true },
 
-    // Symptom booleans (quick yes/no)
+    // Array of symptoms (new format)
+    symptoms: [{ type: String }],
+
+    // Symptom severities map (new format)
+    symptomSeverities: {
+      type: Map,
+      of: String,
+      default: new Map(),
+    },
+
+    // Cycle day (1-28, helps with pattern analysis)
+    cycleDay: { type: Number, min: 1, max: 28, default: null },
+
+    // Mood and sleep tracking
+    moodTypes: [{ type: String }],
+    moodSeverity: { type: String },
+    sleepDuration: { type: Number },
+    sleepQuality: { type: String },
+
+    // Legacy fields for backward compatibility
     cramps: { type: Boolean, default: false },
     headaches: { type: Boolean, default: false },
     moodSwings: { type: Boolean, default: false },

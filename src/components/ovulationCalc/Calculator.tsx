@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import { CycleData, createCycle } from "@/lib/cycles";
 import { upsertSymptom } from "@/lib/symptoms";
-import { createPregnancy, Pregnancy } from "@/lib/pregnancy";
+import { createPregnancy, deletePregnancy, Pregnancy } from "@/lib/pregnancy";
 import {
     addDays,
     format,
@@ -17,6 +17,7 @@ import {
     Info,
     Plus,
     Minus,
+    Trash2,
 } from "lucide-react";
 
 type CalculatorProps = {
@@ -386,9 +387,28 @@ const Calculator: React.FC<CalculatorProps> = ({
                                 <div className="text-sm mt-1">We don't have pregnancy details yet. Click "Add Pregnancy" to record your conception date so we can calculate milestones.</div>
                             )}
                         </div>
-                        <div className="flex gap-2">
-                            <button onClick={() => { if (typeof setCurrentView === 'function') { setCurrentView('pregnancy'); } else { setShowPregnancyModal(true); } }} className="bg-white dark:bg-gray-800 border border-pink-500 text-pink-600 dark:text-pink-200 px-3 py-1 rounded">Open Pregnancy</button>
-                            <button onClick={() => { setShowCycleModal(false); if (typeof setCurrentView === 'function') { setCurrentView('pregnancy'); } else { setShowPregnancyModal(true); } }} className="bg-pink-500 text-white px-3 py-1 rounded">Add / Edit Pregnancy</button>
+                        <div className="flex gap-2 flex-wrap">
+                            <button onClick={() => { if (typeof setCurrentView === 'function') { setCurrentView('pregnancy'); } else { setShowPregnancyModal(true); } }} className="bg-white dark:bg-gray-800 border border-pink-500 text-pink-600 dark:text-pink-200 px-3 py-1 rounded hover:bg-pink-50 transition">Open Pregnancy</button>
+                            <button onClick={() => { setShowCycleModal(false); if (typeof setCurrentView === 'function') { setCurrentView('pregnancy'); } else { setShowPregnancyModal(true); } }} className="bg-pink-500 text-white px-3 py-1 rounded hover:bg-pink-600 transition">Add / Edit Pregnancy</button>
+                            <button 
+                              onClick={async () => {
+                                if (!confirm('Delete this pregnancy record? This action cannot be undone.')) return;
+                                try {
+                                  setIsPregnant(false);
+                                  setGestationInfo(null);
+                                  setConceptionDate(null);
+                                  setSuccessMsg('Pregnancy record deleted');
+                                  setTimeout(() => setSuccessMsg(''), 3000);
+                                } catch (err) {
+                                  setSuccessMsg('Error deleting pregnancy record');
+                                  setTimeout(() => setSuccessMsg(''), 3000);
+                                }
+                              }}
+                              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center gap-1"
+                            >
+                              <Trash2 size={14} />
+                              Delete
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -484,8 +504,8 @@ const Calculator: React.FC<CalculatorProps> = ({
             {showPregnancyModal && (
                 <div className="mt-12 z-40 flex items-center justify-center">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-[90%] max-w-xl relative">
-                        <button onClick={() => setShowPregnancyModal(false)} className="absolute right-3 top-3 text-gray-600">Close</button>
-                        <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Add Pregnancy</h3>
+                        <button onClick={() => setShowPregnancyModal(false)} className="absolute right-3 top-3 text-gray-600 hover:text-gray-900">Close</button>
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Add / Edit Pregnancy</h3>
                         <div className="space-y-4">
                             <div>
                                 <label className="block mb-2 font-semibold text-gray-800 dark:text-gray-100">Conception Date</label>
@@ -503,9 +523,31 @@ const Calculator: React.FC<CalculatorProps> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="flex gap-4 justify-center mt-4">
-                            <button onClick={async () => { if (conceptionDate) { await calculatePregnancyInfo(conceptionDate); setShowPregnancyModal(false); } else { setSuccessMsg('Please select a conception date.'); setTimeout(() => setSuccessMsg(''), 3000); } }} className="bg-pink-600 text-white px-6 py-2 rounded-lg">Save Pregnancy</button>
-                            <button onClick={() => setShowPregnancyModal(false)} className="bg-gray-500 text-white px-6 py-2 rounded-lg">Cancel</button>
+                        <div className="flex gap-4 justify-center mt-4 flex-wrap">
+                            <button onClick={async () => { if (conceptionDate) { await calculatePregnancyInfo(conceptionDate); setShowPregnancyModal(false); } else { setSuccessMsg('Please select a conception date.'); setTimeout(() => setSuccessMsg(''), 3000); } }} className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition">Save Pregnancy</button>
+                            {isPregnant && (
+                              <button 
+                                onClick={async () => {
+                                  if (!confirm('Delete this pregnancy record? This action cannot be undone.')) return;
+                                  try {
+                                    setIsPregnant(false);
+                                    setGestationInfo(null);
+                                    setConceptionDate(null);
+                                    setShowPregnancyModal(false);
+                                    setSuccessMsg('Pregnancy record deleted');
+                                    setTimeout(() => setSuccessMsg(''), 3000);
+                                  } catch (err) {
+                                    setSuccessMsg('Error deleting pregnancy record');
+                                    setTimeout(() => setSuccessMsg(''), 3000);
+                                  }
+                                }}
+                                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-1"
+                              >
+                                <Trash2 size={16} />
+                                Delete
+                              </button>
+                            )}
+                            <button onClick={() => setShowPregnancyModal(false)} className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">Cancel</button>
                         </div>
                     </div>
                 </div>

@@ -35,6 +35,7 @@ import {
   getActivePregnancy,
   updatePregnancy,
   archivePregnancy,
+  deletePregnancy,
 } from "../../lib/pregnancy";
 
 const Pregnancy: React.FC<PregnancyProps> = ({
@@ -251,10 +252,10 @@ const Pregnancy: React.FC<PregnancyProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => setEditing(true)}
-                  className="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600"
+                  className="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600 transition"
                 >
                   Edit
                 </button>
@@ -262,7 +263,7 @@ const Pregnancy: React.FC<PregnancyProps> = ({
                 <button
                   onClick={async () => {
                     if (!activeRecord || !activeRecord._id) return;
-                    if (!confirm('Archive this pregnancy? This will mark it inactive.')) return;
+                    if (!confirm('Archive this pregnancy? This will mark it inactive but keep the data.')) return;
                     try {
                       console.log('[Pregnancy] archivePregnancy: archiving', activeRecord._id);
                       setLoading(true);
@@ -277,9 +278,32 @@ const Pregnancy: React.FC<PregnancyProps> = ({
                       setLoading(false);
                     }
                   }}
-                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
                 >
                   Archive
+                </button>
+
+                <button
+                  onClick={async () => {
+                    if (!activeRecord || !activeRecord._id) return;
+                    if (!confirm('Delete this pregnancy record permanently? This cannot be undone.')) return;
+                    try {
+                      console.log('[Pregnancy] deletePregnancy: deleting', activeRecord._id);
+                      setLoading(true);
+                      await deletePregnancy(activeRecord._id);
+                      console.log('[Pregnancy] deletePregnancy: deleted', activeRecord._id);
+                      setActiveRecord(null);
+                      setGestationInfo(null);
+                      setForm({ dueDate: '', babySize: '', babyWeight: '', weeklyTips: '', conceptionDate: '', milestonesJson: '' });
+                    } catch (err: any) {
+                      setError(err.message || String(err));
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                >
+                  Delete
                 </button>
 
                 <button
@@ -297,7 +321,7 @@ const Pregnancy: React.FC<PregnancyProps> = ({
                       setLoading(false);
                     }
                   }}
-                  className="px-3 py-2 rounded border"
+                  className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50 transition"
                 >
                   Refresh
                 </button>
@@ -436,29 +460,55 @@ const Pregnancy: React.FC<PregnancyProps> = ({
                 </button>
 
                 {activeRecord && (
-                  <button
-                    onClick={async () => {
-                      // quick archive from edit view
-                      if (!activeRecord || !activeRecord._id) return;
-                      if (!confirm('Archive this pregnancy? This will mark it inactive.')) return;
-                      try {
-                        console.log('[Pregnancy] archivePregnancy: archiving', activeRecord._id);
-                        setLoading(true);
-                        await archivePregnancy(activeRecord._id);
-                        console.log('[Pregnancy] archivePregnancy: archived', activeRecord._id);
-                        setActiveRecord(null);
-                        setGestationInfo(null);
-                        setForm({ dueDate: '', babySize: '', babyWeight: '', weeklyTips: '', conceptionDate: '', milestonesJson: '' });
-                      } catch (err: any) {
-                        setError(err.message || String(err));
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
-                  >
-                    Archive
-                  </button>
+                  <>
+                    <button
+                      onClick={async () => {
+                        // quick archive from edit view
+                        if (!activeRecord || !activeRecord._id) return;
+                        if (!confirm('Archive this pregnancy? This will mark it inactive but keep the data.')) return;
+                        try {
+                          console.log('[Pregnancy] archivePregnancy: archiving', activeRecord._id);
+                          setLoading(true);
+                          await archivePregnancy(activeRecord._id);
+                          console.log('[Pregnancy] archivePregnancy: archived', activeRecord._id);
+                          setActiveRecord(null);
+                          setGestationInfo(null);
+                          setForm({ dueDate: '', babySize: '', babyWeight: '', weeklyTips: '', conceptionDate: '', milestonesJson: '' });
+                        } catch (err: any) {
+                          setError(err.message || String(err));
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
+                    >
+                      Archive
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        // quick delete from edit view
+                        if (!activeRecord || !activeRecord._id) return;
+                        if (!confirm('Delete this pregnancy record permanently? This cannot be undone.')) return;
+                        try {
+                          console.log('[Pregnancy] deletePregnancy: deleting', activeRecord._id);
+                          setLoading(true);
+                          await deletePregnancy(activeRecord._id);
+                          console.log('[Pregnancy] deletePregnancy: deleted', activeRecord._id);
+                          setActiveRecord(null);
+                          setGestationInfo(null);
+                          setForm({ dueDate: '', babySize: '', babyWeight: '', weeklyTips: '', conceptionDate: '', milestonesJson: '' });
+                        } catch (err: any) {
+                          setError(err.message || String(err));
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
               </div>
 

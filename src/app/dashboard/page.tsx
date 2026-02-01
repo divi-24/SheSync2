@@ -139,13 +139,6 @@ function DashboardInner() {
   // Wellness and lifestyle
   const wellnessFeatures = [
     {
-      title: "Diet Planning",
-      description: "Personalized nutrition plans",
-      icon: BarChart3,
-      color: "bg-orange-500",
-      route: "/diet-plan"
-    },
-    {
       title: "Bliss Wellness",
       description: "Mindfulness and relaxation",
       icon: Zap,

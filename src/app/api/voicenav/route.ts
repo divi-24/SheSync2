@@ -25,7 +25,6 @@ Available canonical routes (choose ONLY one exact path or respond NO_ROUTE):
 - /pcos                (PCOS information & screening)
 - /consultation        (Book expert consultations)
 - /symptomsanalyzer    (AI symptoms analyzer / HealthLens)
-- /diet-plan           (Personalized diet / meal plans)
 - /chatbot             (Eve — AI health assistant / chat)
 - /voice-agent         (Voice-based assistant)
 - /parent              (Parent's dashboard)
@@ -38,7 +37,7 @@ Available canonical routes (choose ONLY one exact path or respond NO_ROUTE):
 Instructions (strict):
 1) You MUST respond with EXACTLY ONE token and NOTHING ELSE: either one of the canonical routes above (for example: "/blogs") OR the exact token "NO_ROUTE" (uppercase, without quotes) if there is no clear, specific match.
 2) Do NOT return any extra text, explanation, punctuation, or JSON—only the single route string or NO_ROUTE.
-3) Mapping hints: product mentions (pad, cup, tampon, buy pads/tampons/cup) -> /periodproducts. Mentions of "wellness product" or "shop" -> /wellnessproducts. Mentions of Eve, assistant, "talk to Eve" -> /chatbot. Mentions of voice assistant or "voice agent" -> /voice-agent. Mentions of games, mood map, quizzes, memory, hangman -> /bliss. Mentions of ovulation, fertile, period prediction -> /ovulationcalc. Mentions of tracking cycles, period, cycle -> /tracker. Mentions of PCOS or pcos screening -> /pcos. Mentions of booking a doctor or consultation -> /consultation. Mentions of diet, meal plan, nutrition -> /diet-plan. Mentions of parent/child dashboard -> /parent. Mentions of partner dashboard -> /partner. Mentions of community, forum, discussions -> /forums.
+3) Mapping hints: product mentions (pad, cup, tampon, buy pads/tampons/cup) -> /periodproducts. Mentions of "wellness product" or "shop" -> /wellnessproducts. Mentions of Eve, assistant, "talk to Eve" -> /chatbot. Mentions of voice assistant or "voice agent" -> /voice-agent. Mentions of games, mood map, quizzes, memory, hangman -> /bliss. Mentions of ovulation, fertile, period prediction -> /ovulationcalc. Mentions of tracking cycles, period, cycle -> /tracker. Mentions of PCOS or pcos screening -> /pcos. Mentions of booking a doctor or consultation -> /consultation. Mentions of parent/child dashboard -> /parent. Mentions of partner dashboard -> /partner. Mentions of community, forum, discussions -> /forums.
 4) If user input is ambiguous, generic, or doesn't clearly map to one canonical page, respond with NO_ROUTE.
 
 Examples:

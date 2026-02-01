@@ -58,11 +58,6 @@ const menuItems = [
         to: "/symptomsanalyzer",
         description: "Get detailed AI-powered health assessments"
       },
-      {
-        text: "Diet-plan",
-        to: "/diet-plan",
-        description: "Personalized meal and nutrition plans"
-      },
     ],
   },
   {

@@ -592,6 +592,66 @@ export const getAnalytics = async (req, res) => {
             ) / 10; // Round to 1 decimal place
         }
 
+        // Calculate health score (0-100)
+        let healthScore = 0;
+        const scoreFactors = [];
+
+        // Cycle regularity (max 25 points)
+        if (analytics.cycleRegularity === 'regular') {
+            scoreFactors.push(25);
+        } else if (analytics.cycleRegularity === 'somewhat_irregular') {
+            scoreFactors.push(15);
+        } else if (analytics.cycleRegularity === 'irregular') {
+            scoreFactors.push(5);
+        }
+
+        // Sleep quality (max 25 points)
+        if (analytics.averageSleepDuration >= 7 && analytics.averageSleepDuration <= 9) {
+            scoreFactors.push(25);
+        } else if (analytics.averageSleepDuration >= 6 && analytics.averageSleepDuration < 7) {
+            scoreFactors.push(20);
+        } else if (analytics.averageSleepDuration >= 5 && analytics.averageSleepDuration < 6) {
+            scoreFactors.push(15);
+        } else if (analytics.averageSleepDuration > 0) {
+            scoreFactors.push(10);
+        }
+
+        // Tracking consistency (max 20 points)
+        if (trackers.length >= 12) {
+            scoreFactors.push(20); // At least 12 months
+        } else if (trackers.length >= 6) {
+            scoreFactors.push(15); // At least 6 months
+        } else if (trackers.length >= 3) {
+            scoreFactors.push(10); // At least 3 months
+        } else if (trackers.length > 0) {
+            scoreFactors.push(5);
+        }
+
+        // Health data tracking (max 20 points)
+        let healthDataPoints = 0;
+        const hasSymptoms = trackers.some(t => t.symptomTracking && t.symptomTracking.length > 0);
+        const hasMood = trackers.some(t => t.moodTracking && t.moodTracking.length > 0);
+        const hasSleep = trackers.some(t => t.sleepTracking && t.sleepTracking.length > 0);
+
+        if (hasSymptoms) healthDataPoints += 7;
+        if (hasMood) healthDataPoints += 7;
+        if (hasSleep) healthDataPoints += 6;
+
+        scoreFactors.push(healthDataPoints);
+
+        // Cycle duration health (max 10 points)
+        if (analytics.averageCycleDuration >= 21 && analytics.averageCycleDuration <= 35) {
+            scoreFactors.push(10);
+        } else if (analytics.averageCycleDuration >= 20 && analytics.averageCycleDuration <= 40) {
+            scoreFactors.push(7);
+        } else if (analytics.averageCycleDuration > 0) {
+            scoreFactors.push(3);
+        }
+
+        healthScore = Math.round(scoreFactors.reduce((a, b) => a + b, 0));
+
+        analytics.healthScore = Math.min(healthScore, 100); // Cap at 100
+
         return sendSuccessResponse(res, 200, 'Analytics retrieved successfully', analytics);
 
     } catch (error) {

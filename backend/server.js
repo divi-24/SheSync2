@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import multer from 'multer';
 import userRoutes from './routes/user.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -20,6 +21,7 @@ import postRoutes from './routes/postRoutes.js';
 import waitlistRoutes from './routes/waitlistRoutes.js';
 import periodTrackerRoutes from './routes/periodTrackerRoutes.js';
 import partnerRoutes from './routes/partnerRoutes.js';
+import mlRoutes from './routes/mlRoutes.js';
 import Message from './models/Message.js';
 import GlobalMessage from './models/GlobalMessage.js';
 import Community from './models/Community.js';
@@ -50,9 +52,13 @@ const io = new Server(httpServer, {
   },
 });
 
+// Multer configuration for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
+app.use(upload.single('file'));
 
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -77,6 +83,7 @@ app.use("/api/global", globalRoutes);
 app.use("/api/waitlist", waitlistRoutes);
 app.use("/api/period-tracker", periodTrackerRoutes);
 app.use("/api/partner", partnerRoutes);
+app.use("/api/ml", mlRoutes);
 
 app.use('/api/user', userRoutes);
 app.get('/api/context/aggregate', authMiddleware, async (req, res) => {

@@ -42,6 +42,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Proxy API calls to Express backend on port 5000, except for Next.js routes
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Everything goes to Express backend EXCEPT these Next.js routes
+        {
+          source: '/api/(gemini|test)',
+          destination: '/api/$1',
+        },
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:5000/api/:path*',
+        },
+      ],
+    };
+  },
   // Enable headers in App Router (applies globally)
   async headers() {
     return [

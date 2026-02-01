@@ -184,7 +184,8 @@ export default function PeriodTracker() {
             setAnalyticsData(response.data.data);
             break;
           case 'history':
-            setHistoryData(response.data.data);
+            // History endpoint returns {trackers: [...], pagination: {...}}
+            setHistoryData(response.data.data.trackers || response.data.data);
             break;
           case 'active':
             setActiveData(response.data.data);
@@ -296,17 +297,49 @@ export default function PeriodTracker() {
       // Get JWT token from localStorage or cookies
       const token = localStorage.getItem('token') || '';
 
-      const response = await axios.post(
-        `${BACKEND_BASE}/api/period-tracker`,
-        submissionData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
+      // First check if an active tracker exists
+      let activeTrackerId: string | null = null;
+      try {
+        const activeResponse = await axios.get(
+          `${BACKEND_BASE}/api/period-tracker/active`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+          }
+        );
+        if (activeResponse.data.success && activeResponse.data.data?._id) {
+          activeTrackerId = activeResponse.data.data._id;
         }
-      );
+      } catch (e) {
+        // No active tracker found, will create new one
+      }
+
+      // If active tracker exists, update it; otherwise create new one
+      const response = activeTrackerId
+        ? await axios.put(
+            `${BACKEND_BASE}/api/period-tracker/${activeTrackerId}`,
+            submissionData,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              withCredentials: true,
+            }
+          )
+        : await axios.post(
+            `${BACKEND_BASE}/api/period-tracker`,
+            submissionData,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              withCredentials: true,
+            }
+          );
 
       console.log("Data submitted successfully:", response.data);
 
@@ -326,8 +359,6 @@ export default function PeriodTracker() {
         if (error.response?.status === 401) {
           alert("Session expired. Please log in again.");
           router.push("/login");
-        } else if (error.response?.status === 409) {
-          alert("You already have an active period tracker. Please update the existing one.");
         } else if (error.response?.status === 429) {
           alert("Too many requests. Please try again in a few minutes.");
         } else if (error.response?.data?.message) {
@@ -705,7 +736,7 @@ export default function PeriodTracker() {
                   ) : analyticsData ? (
                     <div className="space-y-6">
                       {/* Analytics Summary Cards */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -715,30 +746,68 @@ export default function PeriodTracker() {
                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                               <Calendar className="w-4 h-4 text-blue-600" />
                             </div>
-                            <h3 className="font-semibold text-gray-900">Cycle Insights</h3>
+                            <h3 className="font-semibold text-gray-900 text-sm">Avg Cycle</h3>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">Average cycle length</p>
                           <p className="text-2xl font-bold text-blue-600">
-                            {analyticsData?.averageCycleLength || 'N/A'} days
+                            {analyticsData?.averageCycleDuration || 0}
                           </p>
+                          <p className="text-xs text-gray-600 mt-1">days</p>
                         </motion.div>
 
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
+                          transition={{ delay: 0.05 }}
                           className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-100"
                         >
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                               <HeartPulse className="w-4 h-4 text-purple-600" />
                             </div>
-                            <h3 className="font-semibold text-gray-900">Health Score</h3>
+                            <h3 className="font-semibold text-gray-900 text-sm">Health Score</h3>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">Overall wellbeing</p>
                           <p className="text-2xl font-bold text-purple-600">
-                            {analyticsData?.healthScore || 'N/A'}%
+                            {analyticsData?.healthScore || 0}
                           </p>
+                          <p className="text-xs text-gray-600 mt-1">/100</p>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-100"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <TrendingUp className="w-4 h-4 text-green-600" />
+                            </div>
+                            <h3 className="font-semibold text-gray-900 text-sm">Regularity</h3>
+                          </div>
+                          <p className="text-lg font-bold text-green-600 capitalize">
+                            {analyticsData?.cycleRegularity ? analyticsData.cycleRegularity.replace(/_/g, ' ') : 'N/A'}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1">cycle pattern</p>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.15 }}
+                          className="bg-gradient-to-br from-orange-50 to-yellow-50 p-4 rounded-lg border border-orange-100"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                              </svg>
+                            </div>
+                            <h3 className="font-semibold text-gray-900 text-sm">Sleep Avg</h3>
+                          </div>
+                          <p className="text-2xl font-bold text-orange-600">
+                            {analyticsData?.averageSleepDuration || 0}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1">hours</p>
                         </motion.div>
                       </div>
 
@@ -747,29 +816,81 @@ export default function PeriodTracker() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-white border border-gray-200 rounded-lg p-4"
+                        className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-6"
                       >
                         <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <TrendingUp className="w-5 h-5 text-blue-600" />
-                          Detailed Analytics
+                          <TrendingUp className="w-5 h-5 text-indigo-600" />
+                          Detailed Insights
                         </h3>
-                        <div className="space-y-3">
-                          {Object.entries(analyticsData).map(([key, value], index) => (
-                            <motion.div
-                              key={key}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.3 + index * 0.1 }}
-                              className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg"
-                            >
-                              <span className="text-sm font-medium text-gray-700 capitalize">
-                                {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                              </span>
-                              <span className="text-sm text-gray-900 font-semibold">
-                                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                              </span>
-                            </motion.div>
-                          ))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Avg Period Duration */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="bg-white p-3 rounded-lg border border-gray-200"
+                          >
+                            <span className="text-xs font-medium text-gray-600 uppercase">Period Duration</span>
+                            <p className="text-2xl font-bold text-pink-600 mt-1">
+                              {analyticsData?.averagePeriodDuration || 0} days
+                            </p>
+                          </motion.div>
+
+                          {/* Total Trackers */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.35 }}
+                            className="bg-white p-3 rounded-lg border border-gray-200"
+                          >
+                            <span className="text-xs font-medium text-gray-600 uppercase">Total Entries</span>
+                            <p className="text-2xl font-bold text-indigo-600 mt-1">
+                              {analyticsData?.totalTrackers || 0}
+                            </p>
+                          </motion.div>
+
+                          {/* Most Common Mood */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-white p-3 rounded-lg border border-gray-200"
+                          >
+                            <span className="text-xs font-medium text-gray-600 uppercase">Most Common Mood</span>
+                            <p className="text-xl font-bold text-purple-600 mt-1">
+                              {analyticsData?.mostCommonMood || 'Not tracked'}
+                            </p>
+                          </motion.div>
+
+                          {/* Most Common Symptom */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.45 }}
+                            className="bg-white p-3 rounded-lg border border-gray-200"
+                          >
+                            <span className="text-xs font-medium text-gray-600 uppercase">Most Common Symptom</span>
+                            <p className="text-xl font-bold text-rose-600 mt-1">
+                              {analyticsData?.mostCommonSymptom || 'Not tracked'}
+                            </p>
+                          </motion.div>
+
+                          {/* Last Update */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="bg-white p-3 rounded-lg border border-gray-200 md:col-span-2"
+                          >
+                            <span className="text-xs font-medium text-gray-600 uppercase">Last Updated</span>
+                            <p className="text-lg font-medium text-gray-700 mt-1">
+                              {analyticsData?.lastUpdate ? new Date(analyticsData.lastUpdate).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              }) : 'No updates yet'}
+                            </p>
+                          </motion.div>
                         </div>
                       </motion.div>
                     </div>

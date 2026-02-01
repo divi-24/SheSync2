@@ -347,8 +347,8 @@ export default function Ecom() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ staggerChildren: 0.1 }}
-          className="flex flex-wrap gap-6 md:justify-center"
+          transition={{ staggerChildren: 0.05 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           {loading ? (
             <div className="w-full flex items-center justify-center h-64">
@@ -369,68 +369,88 @@ export default function Ecom() {
               key={product.id || index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -6, boxShadow: "0 8px 32px 0 rgba(236, 72, 153, 0.15)" }}
-              className="rounded-2xl w-40 md:w-fit shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 flex flex-col transition-all duration-200 hover:shadow-xl hover:border-pink-400"
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ y: -8, boxShadow: "0 16px 40px 0 rgba(236, 72, 153, 0.2)" }}
+              className="group rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 flex flex-col transition-all duration-300 hover:border-pink-400 dark:hover:border-pink-500 shadow-lg hover:shadow-2xl"
             >
-              <div className="relative w-full bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+              {/* Image Container - Fixed Aspect Ratio */}
+              <div className="relative w-full h-48 bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden">
                 <img
-            src={product.image || "/fallback.jpg"}
-            alt={product.name}
-            className="object-contain w-28 h-28 md:w-32 md:h-32 mx-auto transition-transform duration-200 group-hover:scale-105"
-            style={{ maxHeight: "120px", maxWidth: "100%" }}
+                  src={product.image || "/fallback.jpg"}
+                  alt={product.name}
+                  className="object-contain w-full h-full p-4 transition-transform duration-300 group-hover:scale-110"
                 />
                 {product.featured && (
-            <span className="absolute top-2 left-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
-              Featured
-            </span>
+                  <motion.span 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg"
+                  >
+                    Featured
+                  </motion.span>
                 )}
               </div>
-              <div className="flex-1 flex flex-col justify-between p-4 md:p-5 space-y-2">
-                <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 min-h-[2.5rem]">
-            {product.name}
+
+              {/* Content Container */}
+              <div className="flex-1 flex flex-col justify-between p-5 space-y-3">
+                {/* Title */}
+                <h3 className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 leading-snug">
+                  {product.name}
                 </h3>
-                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-1">
-            {product.brand || "Available Online"}
+
+                {/* Brand */}
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium">
+                  {product.brand || "Available Online"}
                 </p>
-                <div className="flex items-center justify-between mt-2">
-            <span className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              ₹{product.price || "N/A"}
-            </span>
-            <span className="flex items-center gap-1 text-yellow-500 text-xs font-medium">
-              {"★".repeat(product.rating)}{" "}
-              <span className="text-gray-400 dark:text-gray-500 ml-1">
-                ({product.rating})
-              </span>
-            </span>
+
+                {/* Rating & Price Section */}
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                    ₹{product.price || "N/A"}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-yellow-500 text-sm font-medium">
+                      {"★".repeat(product.rating)}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-500 text-xs">
+                      ({product.rating})
+                    </span>
+                  </div>
                 </div>
+
+                {/* CTA Button */}
                 <a
-            href={product.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block mt-3"
+                  href={product.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block mt-auto"
                 >
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full  py-1 md:px-4 md:py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-semibold shadow-sm hover:from-pink-600 hover:to-purple-700 transition"
-            >
-              View Product
-            </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                  >
+                    View Product
+                  </motion.button>
                 </a>
               </div>
             </motion.div>
           ))}
           {filteredProducts.length > 10 && !showAll && (
-            <div className="w-full flex justify-center mt-4">
+            <motion.div 
+              className="w-full flex justify-center mt-8 col-span-full"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAll(true)}
-                className="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full"
+                className="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
               >
-                View More
+                View All {filteredProducts.length} Products
               </motion.button>
-            </div>
+            </motion.div>
           )}
               </>
             )
