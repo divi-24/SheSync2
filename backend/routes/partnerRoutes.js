@@ -9,7 +9,7 @@ const router = express.Router();
 
 /**
  * @route GET /api/partner/dashboard/:userId
- * @desc Get partner's health data (for connected parents/partners)
+ * @desc Get health data (for connected parents/partners viewing their child/partner)
  * @access Private
  */
 router.get("/dashboard/:userId", authMiddleware, async (req, res) => {
@@ -17,9 +17,9 @@ router.get("/dashboard/:userId", authMiddleware, async (req, res) => {
     const { id: loggedInId, role, parentOf } = req.user;
     const { userId } = req.params;
 
-    // Role-based access control: only parent can view partner data
+    // Role-based access control: parent can view child data if child invited them as parent
     if (role !== "parent") {
-      return res.status(403).json({ message: "Only partners can access this data" });
+      return res.status(403).json({ message: "Only parents can access this data" });
     }
 
     if (parentOf !== userId) {

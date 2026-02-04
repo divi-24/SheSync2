@@ -390,7 +390,7 @@ function DashboardInner() {
         >
           <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
             <Users className="w-6 h-6 text-blue-500" />
-            {user.role === "parent" ? "Parent Hub" : "Personal Hub"}
+            {user.role === "parent" ? "Parent Hub" : user.role === "partner" ? "Partner Hub" : "Personal Hub"}
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -443,6 +443,59 @@ function DashboardInner() {
                     <li className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       HIPAA compliant storage
+                    </li>
+                  </ul>
+                </motion.div>
+              </>
+            ) : user.role === "partner" ? (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  onClick={() => router.push("/partner-dashboard")}
+                  className="group bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="bg-white/20 p-3 rounded-lg">
+                      <Heart className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Partner Dashboard</h3>
+                      <p className="text-rose-100">Support your partner's wellness journey</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-rose-100 group-hover:text-white">
+                    <span className="font-medium">Access Partner Hub</span>
+                    <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="bg-white rounded-xl p-6 shadow-md border"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <ShieldCheck className="w-6 h-6 text-green-500" />
+                    <h3 className="text-lg font-semibold text-gray-800">Relationship Support</h3>
+                  </div>
+                  <p className="text-gray-600 mb-4">
+                    Stay connected and supportive with access to health insights and wellness tracking.
+                  </p>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                      View partner's cycle and health data
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                      Send support messages
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                      Shared wellness goals
                     </li>
                   </ul>
                 </motion.div>

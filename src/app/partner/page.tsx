@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import ProtectedRoute from "../../components/ProtectedRoute";
 import { getProfile } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
+import { sendInvitation } from "../../lib/invitations";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -95,17 +96,9 @@ function PartnerPageInner() {
     setInviteSuccess(false);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE}/api/invitations/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: inviteEmail }),
-      });
+      const result = await sendInvitation(inviteEmail, "partner");
 
-      if (response.ok) {
+      if (result.success) {
         setInviteSuccess(true);
         setInviteEmail("");
         setTimeout(() => {
@@ -113,15 +106,7 @@ function PartnerPageInner() {
           setInviteSuccess(false);
         }, 2000);
       } else {
-        let message = "Failed to send invitation";
-        try {
-          const data = await response.json();
-          if (data && typeof data.message === "string") message = data.message;
-        } catch {
-          const text = await response.text();
-          if (text && !text.startsWith("<")) message = text;
-        }
-        setInviteError(message);
+        setInviteError(result.error || "Failed to send invitation");
       }
     } catch (err: any) {
       setInviteError(err.message || "Error sending invitation");

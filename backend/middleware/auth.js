@@ -42,7 +42,8 @@ export async function authMiddleware(req, res, next) {
       name: user.name,
       email: user.email,
       role: user.role,
-      parentOf: user.parentOf || null,
+      parentOf: user.parentOf ? user.parentOf.toString() : null,
+      partnerOf: user.partnerOf ? user.partnerOf.toString() : null,
     };
 
     next();

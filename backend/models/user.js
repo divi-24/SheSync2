@@ -15,8 +15,9 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
-  role: { type: String, enum: ['user', 'parent'], default: 'user' },
+  role: { type: String, enum: ['user', 'parent', 'partner'], default: 'user' },
   parentOf: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // link parent to user
+  partnerOf: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // link partner to user
   joinedCommunities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }], // communities user has joined
   preferences: {
     language: { type: String, default: 'en' },

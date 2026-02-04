@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 import Invitation from '../models/invitation.js';
+import ParentRequest from '../models/parentRequest.js';
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
@@ -53,7 +54,7 @@ function clearAuthCookies(res) {
 // signup
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, inviterEmail } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: 'Missing fields' });
 
     const exists = await User.findOne({ email });
@@ -61,11 +62,71 @@ router.post('/signup', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
-    const user = await User.create({ name, email, passwordHash, role: role || 'user' });
+    
+    // Determine role based on invitation or explicit role
+    let finalRole = role || 'user';
+    let userParentOf = null;
+    
+    console.log('[SIGNUP] Processing signup for:', email, 'with inviterEmail:', inviterEmail);
+    
+    // Check for pending invitation
+    if (inviterEmail) {
+      const invitation = await Invitation.findOne({
+        inviteeEmail: email,
+        inviterEmail: inviterEmail.toLowerCase(),
+        status: 'pending'
+      }).populate('inviterId');
+      
+      console.log('[SIGNUP] Found invitation:', invitation ? { type: invitation.type, inviterId: invitation.inviterId._id } : 'NOT FOUND');
+      
+      if (invitation) {
+        finalRole = invitation.type === 'parent' ? 'parent' : (invitation.type === 'partner' ? 'partner' : finalRole);
+        if (invitation.type === 'parent') {
+          userParentOf = invitation.inviterId._id;
+        } else if (invitation.type === 'partner') {
+          userParentOf = invitation.inviterId._id;
+        }
+      }
+    }
+    
+    console.log('[SIGNUP] Final role:', finalRole, 'parentOf/partnerOf ID:', userParentOf);
+    
+    const user = await User.create({
+      name,
+      email,
+      passwordHash,
+      role: finalRole,
+      parentOf: finalRole === 'parent' ? userParentOf : null,
+      partnerOf: finalRole === 'partner' ? userParentOf : null
+    });
+    
+    console.log('[SIGNUP] User created:', { id: user._id, email: user.email, role: user.role, parentOf: user.parentOf, partnerOf: user.partnerOf });
+
+    // Mark invitation as accepted for both parent and partner types
+    if (inviterEmail && userParentOf) {
+      // Create parentRequest record for parent type
+      if (finalRole === 'parent') {
+        await ParentRequest.findOneAndUpdate(
+          { user: user._id, parent: userParentOf },
+          { status: 'accepted' },
+          { upsert: true, new: true }
+        );
+      }
+      
+      // Mark invitation as accepted in Invitation collection
+      await Invitation.updateOne(
+        {
+          inviteeEmail: email,
+          inviterEmail: inviterEmail.toLowerCase(),
+          status: 'pending'
+        },
+        { status: 'accepted', acceptedAt: new Date() }
+      );
+    }
 
     setAuthCookies(res, user);
 
-    return res.status(201).json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    return res.status(201).json({ user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role, parentOf: user.parentOf ? user.parentOf.toString() : null, partnerOf: user.partnerOf ? user.partnerOf.toString() : null } });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Server error' });
@@ -86,7 +147,7 @@ router.post('/login', async (req, res) => {
 
     setAuthCookies(res, user);
 
-    return res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    return res.json({ user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role, parentOf: user.parentOf ? user.parentOf.toString() : null, partnerOf: user.partnerOf ? user.partnerOf.toString() : null } });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Server error' });
@@ -102,7 +163,7 @@ router.get('/profile', async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id).select('-passwordHash');
     if (!user) return res.status(401).json({ message: 'User not found' });
-   return res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role, parentOf: user.parentOf || null } });
+    return res.json({ user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role, parentOf: user.parentOf ? user.parentOf.toString() : null, partnerOf: user.partnerOf ? user.partnerOf.toString() : null } });
   } catch (err) {
     console.error(err);
     return res.status(401).json({ message: 'Invalid token' });
@@ -149,7 +210,7 @@ router.post('/parent-accept-invite', async (req, res) => {
     // Set auth cookies for parent session
     setAuthCookies(res, parentUser);
 
-    res.status(201).json({ user: { id: parentUser._id, email: parentUser.email, role: parentUser.role, parentOf: parentUser.parentOf } });
+    res.status(201).json({ user: { id: parentUser._id.toString(), email: parentUser.email, role: parentUser.role, parentOf: parentUser.parentOf ? parentUser.parentOf.toString() : null } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

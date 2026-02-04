@@ -47,10 +47,7 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         // Everything goes to Express backend EXCEPT these Next.js routes
-        {
-          source: '/api/(gemini|test)',
-          destination: '/api/$1',
-        },
+        // (Next.js App Router handles /api/gemini, /api/test, /api/voicenav automatically)
         {
           source: '/api/:path*',
           destination: 'http://localhost:5000/api/:path*',

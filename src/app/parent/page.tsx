@@ -7,8 +7,11 @@ import { useEffect } from "react";
 import { getProfile } from "../../lib/auth";
 import { useState } from "react";
 import { apiFetch } from "../../lib/api";
+import { sendInvitation } from "../../lib/invitations";
+import { invitationEvents } from "../../components/PendingInvitations";
 import { motion } from "framer-motion";
-import { Users, Mail, Send, Check, UserCheck, UserX, ChevronRight } from "lucide-react";
+import { Users, Mail, Send, Check, UserCheck, UserX, ChevronRight, Eye } from "lucide-react";
+import Link from "next/link";
 import { Cookie } from "next/font/google";
 
 const cookie = Cookie({
@@ -49,79 +52,128 @@ export default function ParentPage() {
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
+  async function loadParentData(email: string) {
+    const res = (await apiFetch(`/api/parent/pending?email=${email}`)) as {
+      ok: boolean;
+      body?: { requests?: Request[] };
+    };
+    if (res.ok && res.body?.requests) {
+      setPendingRequests(res.body.requests);
+      const accepted = res.body.requests.find((r: Request) => r.status === "accepted");
+      if (accepted) {
+        setAcceptedUser({
+          id: accepted.user._id,
+          name: accepted.user.name,
+          email: accepted.user.email,
+          role: accepted.user.role,
+        });
+        setPendingUser(null);
+        setShowUserDetails(false);
+      } else if (res.body.requests.length > 0) {
+        const req = res.body.requests[0];
+        setPendingUser({
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          role: req.user.role,
+        });
+        setRequestId(req._id);
+        setAcceptedUser(null);
+      }
+    }
+    const connRes = (await apiFetch(`/api/parent/connected-users?email=${email}`)) as {
+      ok: boolean;
+      body?: { users?: unknown[] };
+    };
+    if (connRes.ok && connRes.body?.users) {
+      setConnectedUsers(
+        connRes.body.users.map((u: { _id: string; name: string; email: string; role: string }) => ({
+          id: u._id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+        }))
+      );
+    }
+    
+    // Also fetch if this parent was invited by a child
+    const myChildRes = (await apiFetch(`/api/parent/my-child?email=${email}`)) as {
+      ok: boolean;
+      body?: { child?: { _id: string; name: string; email: string; role: string } };
+    };
+    console.log('[loadParentData] my-child response:', myChildRes);
+    if (myChildRes.ok && myChildRes.body?.child) {
+      console.log('[loadParentData] Setting acceptedUser to:', myChildRes.body.child);
+      setAcceptedUser({
+        id: myChildRes.body.child._id,
+        name: myChildRes.body.child.name,
+        email: myChildRes.body.child.email,
+        role: myChildRes.body.child.role,
+      });
+      setConnectedUsers([]);
+      setPendingRequests([]);
+    } else {
+      console.log('[loadParentData] No child found or request failed');
+    }
+  }
+
+  async function loadUserData(email: string) {
+    const res = (await apiFetch(`/api/parent/user-connection?email=${email}`)) as {
+      ok: boolean;
+      body?: {
+        connection?: {
+          parent: {
+            _id: string;
+            name: string;
+            email: string;
+            role: string;
+          };
+        };
+      };
+    };
+    if (res.ok && res.body?.connection) {
+      setAcceptedUser({
+        id: res.body.connection.parent._id,
+        name: res.body.connection.parent.name,
+        email: res.body.connection.parent.email,
+        role: res.body.connection.parent.role,
+      });
+      setParentEmail(res.body.connection.parent.email);
+    }
+  }
+
   useEffect(() => {
     getProfile()
       .then(async (profile) => {
         setRole(profile.role);
         if (profile.role === "user") {
           setEmail(profile.email);
-          const res = (await apiFetch(`/api/parent/user-connection?email=${profile.email}`)) as {
-            ok: boolean;
-            body?: {
-              connection?: {
-                parent: {
-                  _id: string;
-                  name: string;
-                  email: string;
-                  role: string;
-                };
-              };
-            };
-          };
-          if (res.ok && res.body?.connection) {
-            setAcceptedUser({
-              id: res.body.connection.parent._id,
-              name: res.body.connection.parent.name,
-              email: res.body.connection.parent.email,
-              role: res.body.connection.parent.role,
-            });
-            setParentEmail(res.body.connection.parent.email);
-          }
+          await loadUserData(profile.email);
         }
         if (profile.role === "parent") {
-          const res = (await apiFetch(`/api/parent/pending?email=${profile.email}`)) as {
-            ok: boolean;
-            body?: { requests?: Request[] };
-          };
-          if (res.ok && res.body?.requests) {
-            setPendingRequests(res.body.requests);
-            const accepted = res.body.requests.find((r: Request) => r.status === "accepted");
-            if (accepted) {
-              setAcceptedUser({
-                id: accepted.user._id,
-                name: accepted.user.name,
-                email: accepted.user.email,
-                role: accepted.user.role,
-              });
-            } else if (res.body.requests.length > 0) {
-              const req = res.body.requests[0];
-              setPendingUser({
-                id: req.user._id,
-                name: req.user.name,
-                email: req.user.email,
-                role: req.user.role,
-              });
-              setRequestId(req._id);
-            }
-          }
-          const connRes = (await apiFetch(`/api/parent/connected-users?email=${profile.email}`)) as {
-            ok: boolean;
-            body?: { users?: unknown[] };
-          };
-          if (connRes.ok && connRes.body?.users) {
-            setConnectedUsers(
-              connRes.body.users.map((u: { _id: string; name: string; email: string; role: string }) => ({
-                id: u._id,
-                name: u.name,
-                email: u.email,
-                role: u.role,
-              }))
-            );
-          }
+          await loadParentData(profile.email);
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Listen for connection acceptance events
+    const handleConnectionAccepted = async () => {
+      // Reload data after a small delay to ensure backend is updated
+      setTimeout(async () => {
+        const profile = await getProfile();
+        if (profile.role === "parent") {
+          await loadParentData(profile.email);
+        } else if (profile.role === "user") {
+          await loadUserData(profile.email);
+        }
+      }, 500);
+    };
+
+    invitationEvents.addEventListener('connectionAccepted', handleConnectionAccepted);
+    return () => {
+      invitationEvents.removeEventListener('connectionAccepted', handleConnectionAccepted);
+    };
   }, []);
 
   function setStatus(msg: string, type: "success" | "error") {
@@ -133,30 +185,15 @@ export default function ParentPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setRequestStatus("");
-    const res = (await apiFetch("/api/parent/request", {
-      method: "POST",
-      body: JSON.stringify({ email, parentEmail }),
-    })) as {
-      ok: boolean;
-      body?: {
-        request?: {
-          _id: string;
-          user: { _id: string; name: string; email: string; role: string };
-        };
-        message?: string;
-      };
-    };
-    if (res.ok && res.body?.request) {
-      setStatus("Request sent successfully!", "success");
-      setPendingUser({
-        id: res.body.request.user._id,
-        name: res.body.request.user.name,
-        email: res.body.request.user.email,
-        role: res.body.request.user.role,
-      });
-      setRequestId(res.body.request._id);
+    
+    // Use new invitation system
+    const result = await sendInvitation(parentEmail, "parent");
+    
+    if (result.success) {
+      setStatus(result.message || "Invitation sent successfully!", "success");
+      setParentEmail("");
     } else {
-      setStatus(res.body?.message || "Error sending request", "error");
+      setStatus(result.error || "Error sending invitation", "error");
     }
   }
 
@@ -373,16 +410,34 @@ export default function ParentPage() {
               </div>
             )}
 
-            {/* Parent view: connected users */}
-            {role === "parent" && connectedUsers.length > 0 && (
+            {/* Parent view: connected users or child they're observing */}
+            {role === "parent" && (acceptedUser || connectedUsers.length > 0) && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-3 rounded-xl">
                     <UserCheck className="w-6 h-6 text-green-600" />
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-800">Connected Users</h2>
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    {acceptedUser ? "Connected Child" : "Connected Users"}
+                  </h2>
                 </div>
                 <div className="space-y-3">
+                  {acceptedUser && (
+                    <Link href="/parent-dashboard">
+                      <motion.div
+                        key={acceptedUser.id}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 rounded-xl bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-100 flex items-center justify-between gap-4 cursor-pointer hover:shadow-md transition-shadow"
+                      >
+                        <div>
+                          <p className="font-semibold text-gray-800">{acceptedUser.name}</p>
+                          <p className="text-sm text-gray-600">{acceptedUser.email}</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-pink-400 flex-shrink-0" />
+                      </motion.div>
+                    </Link>
+                  )}
                   {connectedUsers.map((user) => (
                     <motion.div
                       key={user.id}

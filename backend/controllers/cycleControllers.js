@@ -39,13 +39,42 @@ export const createCycle = async (req, res) => {
 };
 
 /**
- * @desc Get all cycles for the logged-in user
+ * @desc Get all cycles for the logged-in user or a specified user (if parent/partner)
  * @route GET /api/cycles
  * @access Private
  */
 export const getCycles = async (req, res) => {
   try {
-    const cycles = await Cycle.find({ user: req.user.id }).sort({ startDate: -1 });
+    const { userId } = req.query;
+    const { id: loggedInId, role, parentOf, partnerOf } = req.user;
+    
+    // Determine which user's cycles to fetch
+    let targetUserId = loggedInId;
+    
+    if (userId) {
+      // If userId is specified, verify access
+      if (role === 'user') {
+        // Users can only see their own cycles
+        if (loggedInId !== userId) {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
+      } else if (role === 'parent') {
+        // Parents can only see their child's cycles
+        if (parentOf !== userId) {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
+      } else if (role === 'partner') {
+        // Partners can only see their partner's cycles
+        if (partnerOf !== userId) {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
+      } else {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      targetUserId = userId;
+    }
+    
+    const cycles = await Cycle.find({ user: targetUserId }).sort({ startDate: -1 });
     res.json(cycles);
   } catch (error) {
     console.error("Error fetching cycles:", error);

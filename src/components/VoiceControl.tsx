@@ -103,13 +103,26 @@ const VoiceControl = () => {
 
       if (!res.ok) {
         let text = '';
-        try { text = await res.json().then((d: any) => JSON.stringify(d)); } catch (e) { text = await res.text(); }
+        try { 
+          text = await res.text();
+          try { text = JSON.stringify(JSON.parse(text)); } catch (e) { }
+        } catch (e) { 
+          text = 'Unable to read error response'; 
+        }
         console.error('voicenav server error', res.status, text);
         error(`Server error (${res.status}). ${String(text).slice(0,120)}`);
         return;
       }
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        console.error('Failed to parse response:', parseErr);
+        error('Invalid server response');
+        return;
+      }
+
       // If server explicitly indicates no route, show a fading notification and do not navigate
       if (data?.notFound) {
         warning('No matching page found for that request');

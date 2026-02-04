@@ -22,8 +22,20 @@ interface VoiceWaveProps {
   isSpeaking: boolean;
 }
 const getVapiInstance = () => {
-  if (!vapiInstance) vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY as string);
-  return vapiInstance;
+   if (!vapiInstance) {
+      const apiKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+      if (!apiKey) {
+         console.error("❌ NEXT_PUBLIC_VAPI_PUBLIC_KEY is not set in .env");
+         return null;
+      }
+      try {
+         vapiInstance = new Vapi(apiKey);
+      } catch (error) {
+         console.error("❌ Failed to initialize Vapi:", error);
+         return null;
+      }
+   }
+   return vapiInstance;
 };
 
 /* ---------- Pure-CSS voice wave ---------- */
@@ -61,6 +73,7 @@ export default function VoiceAgent() {
   useEffect(() => {
 
     const vapi = getVapiInstance();
+    if (!vapi) return; // Exit if Vapi not initialized
 
     const handleCallStart = () => {
       setIsCalling(true);
@@ -115,25 +128,54 @@ export default function VoiceAgent() {
       }
     };
 
+    const handleError = (error: any) => {
+      console.error("❌ Vapi error:", error);
+      setCallStatus(`❌ Error: ${String(error).slice(0, 50)}`);
+      setIsCalling(false);
+    };
+
     vapi.on("call-start", handleCallStart);
     vapi.on("call-end", handleCallEnd);
     vapi.on("message", handleMessage);
+    vapi.on("error", handleError);
 
     return () => {
       vapi.off("call-start", handleCallStart);
       vapi.off("call-end", handleCallEnd);
       vapi.off("message", handleMessage);
+      vapi.off("error", handleError);
       vapi.stop();
       // fully reset singleton so Fast-Refresh works
       vapiInstance = null;
     };
   }, []);
 
-  const startCall = () => {
-    setCallStatus("Connecting…");
-    getVapiInstance().start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID as string);
+  const startCall = async () => {
+    const vapi = getVapiInstance();
+    if (!vapi) {
+      setCallStatus("❌ Vapi not configured. Add NEXT_PUBLIC_VAPI_PUBLIC_KEY to .env");
+      return;
+    }
+    
+    const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
+    if (!assistantId) {
+      setCallStatus("❌ Vapi assistant not configured. Add NEXT_PUBLIC_VAPI_ASSISTANT_ID to .env");
+      return;
+    }
+    
+    try {
+      setCallStatus("Connecting…");
+      await vapi.start(assistantId);
+    } catch (error) {
+      console.error("❌ Failed to start Vapi call:", error);
+      setCallStatus(`❌ Failed to connect: ${String(error).slice(0, 50)}`);
+      setIsCalling(false);
+    }
   };
-  const endCall = () => getVapiInstance().stop();
+  const endCall = () => {
+    const vapi = getVapiInstance();
+    if (vapi) vapi.stop();
+  };
   const toggleTranscript = () => setShowTranscript(!showTranscript);
 
 

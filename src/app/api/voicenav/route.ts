@@ -10,7 +10,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'server_missing_gemini_key' }, { status: 500 });
     }
 
-    const { command } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error('Failed to parse request body:', e);
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const { command } = body;
     if (!command) return NextResponse.json({ error: 'No command' }, { status: 400 });
 
   const prompt = `You are the navigation parser for SheSync, a women's health and wellness web app. Use the exact canonical routes listed below.
@@ -68,7 +76,7 @@ User command: "${command}"
       // Remove surrounding quotes or punctuation
       const cleaned = raw.replace(/^\s*["'`]*\s*/, '').replace(/\s*["'`.,!;:?]*\s*$/, '');
 
-      const validRoutes = ['/', '/tracker', '/dashboard', '/bliss', '/blogs', '/consultation', '/contact', '/signup', '/login', '/periodproducts', '/pcos', '/chatbot', '/voice-agent'];
+      const validRoutes = ['/', '/tracker', '/dashboard', '/bliss', '/blogs', '/consultation', '/contact', '/signup', '/login', '/periodproducts', '/pcos', '/chatbot', '/voice-agent', '/wellnessproducts', '/ovulationcalc', '/symptomsanalyzer', '/forums', '/parent', '/partner'];
 
       // If model explicitly returned NO_ROUTE, honor it
       if (/\bNO_ROUTE\b/i.test(cleaned)) {

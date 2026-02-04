@@ -5,6 +5,8 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  parentOf?: string | null;
+  partnerOf?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -96,7 +98,8 @@ export async function isAuthenticated(): Promise<boolean> {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         role: role.trim(),
-        password
+        password,
+        inviterEmail: (payload as any).inviterEmail ? (payload as any).inviterEmail.trim().toLowerCase() : undefined
       }),
       // Remove redundant credentials and headers
     });

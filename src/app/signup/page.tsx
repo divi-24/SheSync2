@@ -1,18 +1,34 @@
 
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signup } from "../../lib/auth";
 import { motion } from "framer-motion";
 import {  Mail, Lock, Users, Eye, EyeOff, ArrowLeft, Shield, User } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({ name: "", email: "", role: "user", password: "", confirm: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [inviterEmail, setInviterEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get inviterEmail and role from URL params
+    const inviter = searchParams.get("inviterEmail");
+    const role = searchParams.get("role");
+    
+    if (inviter) {
+      setInviterEmail(inviter);
+      // Pre-fill role based on invitation type
+      if (role) {
+        setForm(prev => ({ ...prev, role }));
+      }
+    }
+  }, [searchParams]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +36,13 @@ export default function SignupPage() {
     if (form.password !== form.confirm) return setErr("Passwords don't match");
     setLoading(true);
     try {
-      await signup({ name: form.name, email: form.email, role: form.role, password: form.password });
+      await signup({ 
+        name: form.name, 
+        email: form.email, 
+        role: form.role, 
+        password: form.password,
+        inviterEmail: inviterEmail || undefined
+      });
       router.replace("/dashboard");
     } catch (error: unknown) {
       setErr(
@@ -127,6 +149,7 @@ export default function SignupPage() {
               >
                 <option value="user">User - Personal Health Tracking</option>
                 <option value="parent">Parent - Family Health Management</option>
+                <option value="partner">Partner - Health Support & Connection</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
