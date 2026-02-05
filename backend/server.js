@@ -22,6 +22,7 @@ import waitlistRoutes from './routes/waitlistRoutes.js';
 import periodTrackerRoutes from './routes/periodTrackerRoutes.js';
 import partnerRoutes from './routes/partnerRoutes.js';
 import mlRoutes from './routes/mlRoutes.js';
+import debugRoutes from './routes/debug.js';
 import Message from './models/Message.js';
 import GlobalMessage from './models/GlobalMessage.js';
 import Community from './models/Community.js';
@@ -84,6 +85,7 @@ app.use("/api/waitlist", waitlistRoutes);
 app.use("/api/period-tracker", periodTrackerRoutes);
 app.use("/api/partner", partnerRoutes);
 app.use("/api/ml", mlRoutes);
+app.use("/api/debug", debugRoutes);
 
 app.use('/api/user', userRoutes);
 app.get('/api/context/aggregate', authMiddleware, async (req, res) => {

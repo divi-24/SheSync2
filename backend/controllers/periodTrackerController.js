@@ -436,10 +436,47 @@ export const addSleepTracking = async (req, res) => {
  */
 export const getTrackingHistory = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const { userId: queryUserId } = req.query;
+        const { id: loggedInId, role, parentOf, partnerOf } = req.user;
+        
+        console.log('[getTrackingHistory] Request:', { queryUserId, loggedInId, role, parentOf, partnerOf });
+        
+        let targetUserId = loggedInId;
+        
+        // If userId is specified in query, verify access
+        if (queryUserId) {
+            console.log('[getTrackingHistory] userId query param found:', queryUserId);
+            if (role === 'user') {
+                // Users can only see their own history
+                if (loggedInId !== queryUserId) {
+                    console.log('[getTrackingHistory] User role check failed');
+                    return sendErrorResponse(res, 403, 'Forbidden');
+                }
+            } else if (role === 'parent') {
+                // Parents can only see their child's history
+                console.log('[getTrackingHistory] Parent role check - parentOf:', parentOf, 'queryUserId:', queryUserId);
+                if (parentOf !== queryUserId) {
+                    console.log('[getTrackingHistory] Parent role check failed');
+                    return sendErrorResponse(res, 403, 'Forbidden');
+                }
+            } else if (role === 'partner') {
+                // Partners can only see their partner's history
+                if (partnerOf !== queryUserId) {
+                    console.log('[getTrackingHistory] Partner role check failed');
+                    return sendErrorResponse(res, 403, 'Forbidden');
+                }
+            } else {
+                console.log('[getTrackingHistory] Invalid role:', role);
+                return sendErrorResponse(res, 403, 'Forbidden');
+            }
+            targetUserId = queryUserId;
+        }
+        
+        const userId = targetUserId;
         const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;
+        console.log('[getTrackingHistory] Fetching history for userId:', userId, 'limit:', limit, 'page:', page);
 
         // Validate limit
         if (limit > 100) {
@@ -453,6 +490,9 @@ export const getTrackingHistory = async (req, res) => {
             .populate('userId', 'name email role');
 
         const total = await PeriodTracker.countDocuments({ userId });
+        
+        console.log('[getTrackingHistory] Found trackers:', trackers.length, 'Total:', total);
+        console.log('[getTrackingHistory] Sample tracker:', trackers.length > 0 ? JSON.stringify(trackers[0]) : 'none');
 
         const response = {
             trackers,
@@ -510,13 +550,61 @@ export const deletePeriodTracker = async (req, res) => {
  */
 export const getAnalytics = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const { userId: queryUserId } = req.query;
+        const { id: loggedInId, role, parentOf, partnerOf } = req.user;
+        
+        console.log('[getAnalytics] Request:', { queryUserId, loggedInId, role, parentOf, partnerOf });
+        
+        let targetUserId = loggedInId;
+        
+        // If userId is specified in query, verify access
+        if (queryUserId) {
+            console.log('[getAnalytics] userId query param found:', queryUserId);
+            if (role === 'user') {
+                // Users can only see their own analytics
+                if (loggedInId !== queryUserId) {
+                    console.log('[getAnalytics] User role check failed');
+                    return sendErrorResponse(res, 403, 'Forbidden');
+                }
+            } else if (role === 'parent') {
+                // Parents can only see their child's analytics
+                console.log('[getAnalytics] Parent role check - parentOf:', parentOf, 'queryUserId:', queryUserId);
+                if (parentOf !== queryUserId) {
+                    console.log('[getAnalytics] Parent role check failed');
+                    return sendErrorResponse(res, 403, 'Forbidden');
+                }
+            } else if (role === 'partner') {
+                // Partners can only see their partner's analytics
+                if (partnerOf !== queryUserId) {
+                    console.log('[getAnalytics] Partner role check failed');
+                    return sendErrorResponse(res, 403, 'Forbidden');
+                }
+            } else {
+                console.log('[getAnalytics] Invalid role:', role);
+                return sendErrorResponse(res, 403, 'Forbidden');
+            }
+            targetUserId = queryUserId;
+        }
+        
+        const userId = targetUserId;
+        console.log('[getAnalytics] Fetching analytics for userId:', userId);
 
         // Get all user's trackers
         const trackers = await PeriodTracker.find({ userId }).sort({ createdAt: -1 });
+        console.log('[getAnalytics] Found trackers:', trackers.length);
 
         if (trackers.length === 0) {
-            return sendErrorResponse(res, 404, 'No tracking data found');
+            console.log('[getAnalytics] No trackers found for user');
+            return sendSuccessResponse(res, 200, 'No tracking data found', {
+                totalTrackers: 0,
+                healthScore: 0,
+                averageCycleDuration: 0,
+                averagePeriodDuration: 0,
+                cycleRegularity: 'unknown',
+                mostCommonMood: null,
+                mostCommonSymptom: null,
+                averageSleepDuration: 0
+            });
         }
 
         // Calculate analytics
