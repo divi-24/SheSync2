@@ -37,7 +37,12 @@ const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:3000';
 // Allow multiple origins in development to avoid CORS/preflight 403 (e.g. localhost vs 127.0.0.1)
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-  : [FRONTEND, 'http://127.0.0.1:3000', 'http://localhost:3000'];
+  : [
+      FRONTEND,
+      'http://127.0.0.1:3000',
+      'http://localhost:3000',
+      ...(process.env.NODE_ENV === 'production' ? [] : []),
+    ];
 const corsOptions = {
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);

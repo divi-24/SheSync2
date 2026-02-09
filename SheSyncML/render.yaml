@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: shesync-ml-api
+    env: python
+    region: oregon
+    plan: standard
+    pythonVersion: 3.11
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000 --workers 2
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "10000"
+      - key: CORS_ORIGINS
+        sync: false
+    autoDeploy: true
+    headers:
+      - path: /predict*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /health
+        name: Cache-Control
+        value: no-cache

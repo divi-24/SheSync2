@@ -56,6 +56,7 @@
 
 
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
 import numpy as np
@@ -65,6 +66,7 @@ from PIL import Image
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
+import os
 
 # ======================================================
 # 1️⃣ Initialize app
@@ -73,6 +75,16 @@ app = FastAPI(
     title="PCOS Prediction API",
     description="Predicts PCOS from clinical data and ultrasound images",
     version="2.0"
+)
+
+# Add CORS middleware
+allowed_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in allowed_origins],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ======================================================
@@ -175,3 +187,14 @@ async def predict_pcos_from_image(file: UploadFile = File(...)):
     }
 
     return result
+
+# ======================================================
+# 5️⃣ Health Check Endpoint
+# ======================================================
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "ok",
+        "service": "PCOS Prediction API",
+        "version": "2.0"
+    }

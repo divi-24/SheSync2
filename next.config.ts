@@ -44,13 +44,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Proxy API calls to Express backend on port 5000, except for Next.js routes
   async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     return {
       beforeFiles: [
         // Everything goes to Express backend EXCEPT these Next.js routes
         // (Next.js App Router handles /api/gemini, /api/test, /api/voicenav automatically)
         {
           source: '/api/:path*',
-          destination: 'http://localhost:5000/api/:path*',
+          destination: `${apiUrl}/api/:path*`,
         },
       ],
     };
