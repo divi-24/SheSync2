@@ -7,6 +7,18 @@ export interface Invitation {
   createdAt: string;
 }
 
+interface InvitationResponse {
+  ok: boolean;
+  body: {
+    success?: boolean;
+    message?: string;
+    warning?: string;
+    invitationId?: string;
+    error?: string;
+    invitations?: Invitation[];
+  };
+}
+
 /**
  * Send invitation to parent or partner
  */
@@ -27,7 +39,7 @@ export async function sendInvitation(
         inviteeEmail,
         type
       })
-    }) as any;
+    }) as InvitationResponse;
 
     if (response.ok) {
       return response.body;
@@ -53,7 +65,7 @@ export async function sendInvitation(
  */
 export async function getPendingInvitations(): Promise<Invitation[]> {
   try {
-    const response = await apiFetch('/api/invitations/pending') as any;
+    const response = await apiFetch('/api/invitations/pending') as InvitationResponse;
 
     if (response.ok && response.body?.invitations) {
       return response.body.invitations;
@@ -77,7 +89,7 @@ export async function acceptInvitation(invitationId: string): Promise<{
     const response = await apiFetch(`/api/invitations/${invitationId}/accept`, {
       method: 'POST',
       body: JSON.stringify({})
-    }) as any;
+    }) as InvitationResponse;
 
     if (response.ok) {
       return response.body;
@@ -110,7 +122,7 @@ export async function rejectInvitation(invitationId: string): Promise<{
     const response = await apiFetch(`/api/invitations/${invitationId}/reject`, {
       method: 'POST',
       body: JSON.stringify({})
-    }) as any;
+    }) as InvitationResponse;
 
     if (response.ok) {
       return response.body;
