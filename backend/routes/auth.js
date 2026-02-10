@@ -31,24 +31,24 @@ function setAuthCookies(res, user) {
   // httpOnly JWT
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     maxAge: JWT_EXPIRES_MS,
   });
   // non-httpOnly session helper (base64 JSON)
   const sessionStr = Buffer.from(JSON.stringify(sessionPayload)).toString('base64');
   res.cookie(SESSION_COOKIE, sessionStr, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     maxAge: JWT_EXPIRES_MS,
   });
 }
 
 // clear both cookies
 function clearAuthCookies(res) {
-  res.clearCookie(COOKIE_NAME, { sameSite: 'lax' });
-  res.clearCookie(SESSION_COOKIE, { sameSite: 'lax' });
+  res.clearCookie(COOKIE_NAME, { sameSite: 'none', secure: true });
+  res.clearCookie(SESSION_COOKIE, { sameSite: 'none', secure: true });
 }
 
 // signup
