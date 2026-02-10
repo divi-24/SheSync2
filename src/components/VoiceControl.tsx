@@ -57,8 +57,8 @@ const VoiceControl = () => {
         let text = '';
         try { 
           text = await res.text();
-          try { text = JSON.stringify(JSON.parse(text)); } catch (parseError) { /* ignore */ }
-        } catch (readError) { 
+          try { text = JSON.stringify(JSON.parse(text)); } catch { /* ignore parse error */ }
+        } catch { 
           text = 'Unable to read error response'; 
         }
         console.error('voicenav server error', res.status, text);
@@ -104,7 +104,9 @@ const VoiceControl = () => {
     }
 
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const windowWithSpeech = window as typeof window & { webkitSpeechRecognition?: SpeechRecognition };
+      const SpeechRecognition = window.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
@@ -143,7 +145,7 @@ const VoiceControl = () => {
     return () => {
       if (recognitionRef.current) recognitionRef.current.stop();
     };
-  }, [error]);
+  }, [error, processCommand]);
 
   // Auto-hide the transcript after a short delay so it doesn't persist
   useEffect(() => {

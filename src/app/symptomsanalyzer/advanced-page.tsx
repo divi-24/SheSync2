@@ -1,8 +1,7 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Activity,
   Brain,
   AlertCircle,
   ChevronRight,
@@ -10,26 +9,16 @@ import {
   CheckCircle,
   ArrowLeft,
   Plus,
-  AlertTriangle,
   BarChart,
   TrendingUp,
   Heart,
   Zap,
   Shield,
-  Book,
-  Clock,
   Droplets,
   Wind,
   Users,
   Calendar,
 } from "lucide-react";
-import { Cookie } from "next/font/google";
-
-const cookie = Cookie({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-cookie",
-});
 
 const symptomCategories = {
   "Pain & Discomfort": [
@@ -130,7 +119,6 @@ export default function AdvancedSymptomAnalyzer() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [customSymptom, setCustomSymptom] = useState("");
   const [customSymptomsList, setCustomSymptomsList] = useState<string[]>([]);
-  const [intensity, setIntensity] = useState("");
   const [cycleDay, setCycleDay] = useState<number | null>(null);
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -635,20 +623,20 @@ function AnalysisResults({
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-        {["overview", "risks", "recommendations", "patterns"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab as any)}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-              activeTab === tab
-                ? "border-pink-500 text-pink-600 dark:text-pink-400"
-                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
+         {["overview", "risks", "recommendations", "patterns"].map((tab) => (
+           <button
+             key={tab}
+             onClick={() => setActiveTab(tab as "overview" | "risks" | "recommendations" | "patterns")}
+             className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+               activeTab === tab
+                 ? "border-pink-500 text-pink-600 dark:text-pink-400"
+                 : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+             }`}
+           >
+             {tab.charAt(0).toUpperCase() + tab.slice(1)}
+           </button>
+         ))}
+       </div>
 
       {/* Tab Content */}
       <AnimatePresence mode="wait">
