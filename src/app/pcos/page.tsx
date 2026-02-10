@@ -218,7 +218,7 @@ export default function PCOSPage() {
             // Image prediction
             if (assessmentType === "image" || assessmentType === "combined") {
                 const formDataImg = new FormData();
-                formDataImg.append("file", uploadedImage);
+                formDataImg.append("file", uploadedImage!);
 
                 const response = await fetch(`${ML_API_URL}/predict_image`, {
                     method: "POST",

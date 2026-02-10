@@ -28,7 +28,8 @@ import {
   BarChart3,
   Timer,
   Zap,
-  Target
+  Target,
+  Clock
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -182,7 +183,7 @@ function DashboardInner() {
             className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6"
           >
             <div className="flex-1">
-              <h1 className={`${cookie.className} flex items-center gap-3 mb-3`}>
+              <h1 className="flex items-center gap-3 mb-3">
                 <span className="text-4xl lg:text-6xl bg-gradient-to-r from-pink-500 via-rose-400 to-purple-500 bg-clip-text text-transparent pb-3">
                   {getGreeting()}, {user.name}!
                 </span>

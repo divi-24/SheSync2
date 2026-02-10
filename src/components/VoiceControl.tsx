@@ -14,6 +14,21 @@ interface SpeechRecognitionErrorEvent extends Event {
   error: string;
 }
 
+interface SpeechRecognition {
+  start(): void;
+  stop(): void;
+  abort(): void;
+  addEventListener(type: string, listener: EventListener): void;
+  removeEventListener(type: string, listener: EventListener): void;
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+}
+
 const VoiceControl = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -104,23 +119,24 @@ const VoiceControl = () => {
     }
 
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const windowWithSpeech = window as typeof window & { webkitSpeechRecognition?: SpeechRecognition };
-      const SpeechRecognition = window.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const windowWithSpeech = window as any;
+      const SpeechRecognition = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
       if (!SpeechRecognition) return;
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = "en-US";
-      recognitionRef.current.maxAlternatives = 1;
+      recognitionRef.current!.continuous = false;
+      recognitionRef.current!.interimResults = false;
+      recognitionRef.current!.lang = "en-US";
+      recognitionRef.current!.maxAlternatives = 1;
 
-      recognitionRef.current.onresult = async (event: SpeechRecognitionEvent) => {
+      recognitionRef.current!.onresult = async (event: SpeechRecognitionEvent) => {
         const speechResult = event.results[0][0].transcript;
         setLastError(null);
         setTranscript(speechResult);
         await processCommand(speechResult);
       };
 
-      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+      recognitionRef.current!.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error("Speech recognition error:", event.error);
         setIsListening(false);
         setLastError(event.error || 'unknown');
@@ -135,7 +151,7 @@ const VoiceControl = () => {
         error(message);
       };
 
-      recognitionRef.current.onend = () => {
+      recognitionRef.current!.onend = () => {
         setIsListening(false);
       };
     } else {

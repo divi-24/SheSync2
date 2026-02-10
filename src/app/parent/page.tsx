@@ -87,7 +87,7 @@ export default function ParentPage() {
     };
     if (connRes.ok && connRes.body?.users) {
       setConnectedUsers(
-        connRes.body.users.map((u: { _id: string; name: string; email: string; role: string }) => ({
+        (connRes.body.users as { _id: string; name: string; email: string; role: string }[]).map((u) => ({
           id: u._id,
           name: u.name,
           email: u.email,

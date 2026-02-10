@@ -42,7 +42,13 @@ export async function sendInvitation(
     }) as InvitationResponse;
 
     if (response.ok) {
-      return response.body;
+      return {
+        success: response.body?.success ?? true,
+        message: response.body?.message ?? 'Invitation sent successfully',
+        warning: response.body?.warning,
+        invitationId: response.body?.invitationId,
+        error: response.body?.error
+      };
     } else {
       return {
         success: false,
@@ -92,7 +98,11 @@ export async function acceptInvitation(invitationId: string): Promise<{
     }) as InvitationResponse;
 
     if (response.ok) {
-      return response.body;
+      return {
+        success: response.body?.success ?? true,
+        message: response.body?.message ?? 'Invitation accepted successfully',
+        error: response.body?.error
+      };
     } else {
       return {
         success: false,
@@ -125,7 +135,11 @@ export async function rejectInvitation(invitationId: string): Promise<{
     }) as InvitationResponse;
 
     if (response.ok) {
-      return response.body;
+      return {
+        success: response.body?.success ?? true,
+        message: response.body?.message ?? 'Invitation rejected successfully',
+        error: response.body?.error
+      };
     } else {
       return {
         success: false,

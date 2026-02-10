@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from "react";
 import ProtectedRoute from "../../components/ProtectedRoute";
-import { getProfile } from "../../lib/auth";
+import { getProfile, User } from "../../lib/auth";
 import { API_BASE, apiFetch } from "../../lib/api";
 import { invitationEvents } from "../../components/PendingInvitations";
 import { motion } from "framer-motion";
@@ -74,7 +74,7 @@ interface MoodData {
 }
 
 function ParentDashboardInner() {
-    const [user, setUser] = useState<{ parentOf?: string; email?: string } | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [childData, setChildData] = useState<ChildProfile | null>(null);
     const [cycleData, setCycleData] = useState<CycleInfo | null>(null);
     const [analytics, setAnalytics] = useState<HealthAnalytics | null>(null);
