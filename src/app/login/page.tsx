@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       await login(form.email, form.password);
       await refreshAuth();
-      router.replace("/dashboard");
+      router.replace("/tracker");
     } catch (error: unknown) {
       if (error instanceof Error) {
         setErr(error.message);

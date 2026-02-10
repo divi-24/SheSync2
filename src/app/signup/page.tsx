@@ -43,7 +43,7 @@ export default function SignupPage() {
         password: form.password,
         inviterEmail: inviterEmail || undefined
       });
-      router.replace("/dashboard");
+      router.replace("/tracker");
     } catch (error: unknown) {
       setErr(
         typeof error === "object" && error !== null && "message" in error
