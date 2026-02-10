@@ -33,14 +33,14 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
-const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND = process.env.FRONTEND_URL || 'https://shesync-rouge.vercel.app';
 // Allow multiple origins in development to avoid CORS/preflight 403 (e.g. localhost vs 127.0.0.1)
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
   : [
       FRONTEND,
-      'http://127.0.0.1:3000',
-      'http://localhost:3000',
+      'https://shesync-rouge.vercel.app',
+      'https://shesync-rouge.vercel.app',
       ...(process.env.NODE_ENV === 'production' ? [] : []),
     ];
 const corsOptions = {
