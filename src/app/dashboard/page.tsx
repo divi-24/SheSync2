@@ -15,7 +15,6 @@ import {
   MessageCircle,
   Heart,
   TrendingUp,
-  Clock,
   AlertCircle,
   Plus,
   ChevronRight,
@@ -31,13 +30,6 @@ import {
   Zap,
   Target
 } from "lucide-react";
-import { Cookie } from "next/font/google";
-
-const cookie = Cookie({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-cookie'
-});
 
 export default function DashboardPage() {
   return (
@@ -250,7 +242,7 @@ function DashboardInner() {
             </div>
 
             <p className="text-gray-700 mb-6 text-lg leading-relaxed">
-              Don't forget to log your health data today! Track your cycle, symptoms, and wellness metrics to get personalized insights.
+              Don&apos;t forget to log your health data today! Track your cycle, symptoms, and wellness metrics to get personalized insights.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">

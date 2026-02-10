@@ -1,76 +1,28 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Mic, MicOff } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  error?: string;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
 
 const VoiceControl = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [lastError, setLastError] = useState<string | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const router = useRouter();
   const { success, error, warning } = useToast();
 
-  useEffect(() => {
-    const isSecure = window.location.protocol === "https:" || window.location.hostname === "localhost";
-
-    if (!isSecure) {
-      error("Voice recognition requires HTTPS. Feature unavailable.");
-      return;
-    }
-
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = "en-US";
-      recognitionRef.current.maxAlternatives = 1;
-
-      recognitionRef.current.onresult = async (event: any) => {
-        const speechResult = event.results[0][0].transcript;
-        setLastError(null);
-        setTranscript(speechResult);
-        await processCommand(speechResult);
-      };
-
-      recognitionRef.current.onerror = (event: any) => {
-        console.error("Speech recognition error:", event.error);
-        setIsListening(false);
-        setLastError(event.error || 'unknown');
-        const errorMessages: Record<string, string> = {
-          network: "Network error. Please check your internet connection and try again.",
-          "not-allowed": "Microphone access denied. Please allow microphone permissions in your browser settings.",
-          "no-speech": "No speech detected. Please try speaking again.",
-          aborted: "Speech recognition was aborted.",
-          "audio-capture": "No microphone was found or microphone is being used by another app.",
-        };
-        const message = errorMessages[event.error] || `Voice recognition error: ${event.error || 'unknown'}. Try refreshing, check mic permissions, or use the typed command.`;
-        error(message);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    } else {
-      error("Speech recognition not supported. Please use Chrome, Edge, or Safari.");
-    }
-
-    return () => {
-      if (recognitionRef.current) recognitionRef.current.stop();
-    };
-  }, []);
-
-  // Auto-hide the transcript after a short delay so it doesn't persist
-  useEffect(() => {
-    if (!transcript) return;
-    const id = setTimeout(() => setTranscript(''), 3500);
-    return () => clearTimeout(id);
-  }, [transcript]);
-
-  const processCommand = async (command: string) => {
+  const processCommand = useCallback(async (command: string) => {
     // Local commands: scrolling and back
     const cmd = command.toLowerCase();
     if (cmd.includes('page down') || cmd.includes('pagedown') || cmd.includes('scroll down')) {
@@ -105,8 +57,8 @@ const VoiceControl = () => {
         let text = '';
         try { 
           text = await res.text();
-          try { text = JSON.stringify(JSON.parse(text)); } catch (e) { }
-        } catch (e) { 
+          try { text = JSON.stringify(JSON.parse(text)); } catch (parseError) { /* ignore */ }
+        } catch (readError) { 
           text = 'Unable to read error response'; 
         }
         console.error('voicenav server error', res.status, text);
@@ -141,7 +93,64 @@ const VoiceControl = () => {
       console.error('Error processing command:', err);
       error('Failed to process voice command');
     }
-  };
+  }, [router, success, error, warning]);
+
+  useEffect(() => {
+    const isSecure = window.location.protocol === "https:" || window.location.hostname === "localhost";
+
+    if (!isSecure) {
+      error("Voice recognition requires HTTPS. Feature unavailable.");
+      return;
+    }
+
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = "en-US";
+      recognitionRef.current.maxAlternatives = 1;
+
+      recognitionRef.current.onresult = async (event: SpeechRecognitionEvent) => {
+        const speechResult = event.results[0][0].transcript;
+        setLastError(null);
+        setTranscript(speechResult);
+        await processCommand(speechResult);
+      };
+
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false);
+        setLastError(event.error || 'unknown');
+        const errorMessages: Record<string, string> = {
+          network: "Network error. Please check your internet connection and try again.",
+          "not-allowed": "Microphone access denied. Please allow microphone permissions in your browser settings.",
+          "no-speech": "No speech detected. Please try speaking again.",
+          aborted: "Speech recognition was aborted.",
+          "audio-capture": "No microphone was found or microphone is being used by another app.",
+        };
+        const message = errorMessages[event.error] || `Voice recognition error: ${event.error || 'unknown'}. Try refreshing, check mic permissions, or use the typed command.`;
+        error(message);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    } else {
+      error("Speech recognition not supported. Please use Chrome, Edge, or Safari.");
+    }
+
+    return () => {
+      if (recognitionRef.current) recognitionRef.current.stop();
+    };
+  }, [error]);
+
+  // Auto-hide the transcript after a short delay so it doesn't persist
+  useEffect(() => {
+    if (!transcript) return;
+    const id = setTimeout(() => setTranscript(''), 3500);
+    return () => clearTimeout(id);
+  }, [transcript]);
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
