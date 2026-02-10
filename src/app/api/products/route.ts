@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       location: "India",
       hl: "en",
       gl: "in",
-      api_key: process.env.SERPAPI_KEY!,
+      api_key: process.env.SERPAPI_KEY,
     });
 
     return NextResponse.json({ products: response.shopping_results || [] });
