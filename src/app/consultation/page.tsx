@@ -9,6 +9,8 @@ import {
     Languages,
     ArrowUpDown,
     X,
+    Video,
+    Stethoscope,
 } from "lucide-react";
 import {
     GoogleMap,
@@ -415,7 +417,7 @@ export default function Consultations() {
                                         Video Consultation
                                     </span>
                                     <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        ₹{doctor.price} for 30 mins
+                                        Schedule a session
                                     </span>
                                 </button>
                                 <button
@@ -433,7 +435,7 @@ export default function Consultations() {
                                         Clinic Visit
                                     </span>
                                     <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        ₹{doctor.price + 200} for 30 mins
+                                        Schedule an appointment
                                     </span>
                                 </button>
                             </div>
@@ -513,27 +515,16 @@ export default function Consultations() {
                             </h3>
                             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-4">
                                 <div className="flex justify-between text-sm">
-                                    <span>Consultation Fee</span>
-                                    <span>
-                                        ₹
-                                        {selectedConsultationType === "clinic"
-                                            ? doctor.price + 200
-                                            : doctor.price}
-                                    </span>
+                                    <span>Type</span>
+                                    <span className="capitalize">{selectedConsultationType}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span>Platform Fee</span>
-                                    <span>₹50</span>
+                                    <span>Doctor</span>
+                                    <span>{doctor.name}</span>
                                 </div>
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-                                    <div className="flex justify-between font-medium">
-                                        <span>Total Amount</span>
-                                        <span>
-                                            ₹
-                                            {selectedConsultationType === "clinic"
-                                                ? doctor.price + 250
-                                                : doctor.price + 50}
-                                        </span>
+                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        Confirm to schedule an appointment with {doctor.name}
                                     </div>
                                 </div>
                             </div>
