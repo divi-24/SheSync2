@@ -55,6 +55,7 @@ import ClientLoaderWrapper from "@/components/ClientLoaderWrapper";
 // VoiceControl is a client component (has "use client") so we can import it directly.
 import VoiceControl from '@/components/VoiceControl';
 import PendingInvitations from '@/components/PendingInvitations';
+import { Analytics } from '@vercel/analytics/next';
 
 const lexendDeca = Lexend_Deca({
   subsets: ['latin'],
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <PendingInvitations />
           </ClientLoaderWrapper>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
