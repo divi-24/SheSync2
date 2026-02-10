@@ -349,9 +349,9 @@ export default function AdvancedSymptomAnalyzer() {
             </div>
 
             {/* Custom Symptom Input */}
-            <div className="mt-4">
+             <div className="mt-4">
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-white">
-                Can't find your symptom?
+                Can&apos;t find your symptom?
               </label>
               <div className="flex gap-2">
                 <input
